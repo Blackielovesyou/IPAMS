@@ -1,0 +1,90 @@
+/* Prevent horizontal scrolling on all devices */
+html,
+body {
+  overflow-x: hidden;
+  width: 100%;
+}
+
+.container-fluid,
+.row,
+main,
+nav,
+.offcanvas {
+  max-width: 100vw;
+  box-sizing: border-box;
+}
+
+@media (max-width: 991.98px) {
+  #offcanvasSidebar {
+    width: 75% !important;
+    /* increased from 50% */
+    border-radius: 0 10px 10px 0;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* Offcanvas nav link styling */
+#offcanvasSidebar .nav-link {
+  padding: 0.5rem 0.75rem;
+  border-radius: 5px;
+}
+
+#offcanvasSidebar .nav-link:hover {
+  background-color: #f1f1f1;
+  text-decoration: none;
+}
+
+/* Offcanvas title */
+#offcanvasSidebarLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Responsive cards */
+@media (max-width: 575.98px) {
+  .card h6 {
+    font-size: 0.9rem;
+  }
+
+  .card h4 {
+    font-size: 1.2rem;
+  }
+
+  .card small {
+    font-size: 0.75rem;
+  }
+}
+
+/* Navbar improvements */
+.navbar-brand div {
+  white-space: normal;
+  /* Wrap text instead of squeezing */
+}
+
+.navbar-brand .h6 {
+  font-size: 1rem;
+}
+
+.navbar-brand small {
+  font-size: 0.75rem;
+}
+
+@media (max-width: 575.98px) {
+  .navbar-brand .h6 {
+    font-size: 0.9rem;
+  }
+
+  .navbar-brand small {
+    font-size: 0.65rem;
+  }
+
+  .d-flex.align-items-center.ms-auto span {
+    font-size: 0.8rem;
+  }
+
+  .d-flex.align-items-center.ms-auto button {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+}
