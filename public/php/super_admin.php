@@ -1,3 +1,23 @@
+<?php
+session_start();
+
+// Prevent caching (for logout/back button issue)
+header("Cache-Control: no-cache, no-store, must-revalidate");
+header("Pragma: no-cache");
+header("Expires: 0");
+
+// Redirect if not logged in
+if (!isset($_SESSION['id']) || !isset($_SESSION['role'])) {
+    header("Location: loginform.php");
+    exit;
+}
+
+// ✅ Get the role from session
+$userRole = $_SESSION['role'];
+?>
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -128,9 +148,11 @@
             <!-- Right: User Info + Logout -->
             <div class="d-flex flex-column flex-lg-row align-items-end align-items-lg-center gap-1 gap-lg-2">
                 <div class="text-end">
-                    <div class="fw-semibold" style="font-size: clamp(0.9rem, 2vw, 1rem);">Administrator</div>
-                    <small class="text-muted" style="font-size: clamp(0.7rem, 1.5vw, 0.85rem);">OBO Staff</small>
+                    <div class="fw-semibold" style="font-size: clamp(0.9rem, 2vw, 1rem);">
+                            <?php echo htmlspecialchars($userRole); ?>
+                    </div>
                 </div>
+
                 <button id="logoutBtn" class="btn btn-primary btn-sm flex-shrink-0">Logout</button>
             </div>
         </div>
@@ -232,7 +254,7 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="../javascript/logout.js"></script>
 
 </body>

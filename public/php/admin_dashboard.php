@@ -1,16 +1,20 @@
 <?php
 session_start();
 
+// Prevent caching (for logout/back button issue)
+header("Cache-Control: no-cache, no-store, must-revalidate");
+header("Pragma: no-cache");
+header("Expires: 0");
+
 // Redirect if not logged in
-if (!isset($_SESSION['id'])) {
+if (!isset($_SESSION['id']) || !isset($_SESSION['role'])) {
     header("Location: loginform.php");
     exit;
 }
 
-// Get role only
-$userRole = $_SESSION['role'] ?? "Unknown Role";
+// ✅ Get the role from session
+$userRole = $_SESSION['role'];
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">

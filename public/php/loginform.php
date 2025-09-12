@@ -233,6 +233,18 @@ if (isset($_SESSION['id']) && isset($_SESSION['role']) && !isset($_SESSION['succ
       <?php unset($_SESSION['success']); ?>
     <?php endif; ?>
   </script>
+  <?php if (isset($_GET['registered']) && $_GET['registered'] === 'success'): ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+      Swal.fire({
+        icon: 'success',
+        title: 'Registration Successful!',
+        text: 'You can now log in with your account.',
+        confirmButtonText: 'OK'
+      });
+    </script>
+  <?php endif; ?>
+
   <script src="../javascript/login_register_swap.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <?php include("loading_modal.php"); ?>

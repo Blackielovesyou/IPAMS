@@ -1,12 +1,21 @@
 <?php
 session_start();
 
-// ✅ Redirect to index.php if not logged in
+// Prevent caching (for logout/back button issue)
+header("Cache-Control: no-cache, no-store, must-revalidate");
+header("Pragma: no-cache");
+header("Expires: 0");
+
+// Redirect if not logged in
 if (!isset($_SESSION['id']) || !isset($_SESSION['role'])) {
-    header("Location: index.php");
-    exit;
+  header("Location: loginform.php");
+  exit;
 }
+
+// ✅ Get the role from session
+$userRole = $_SESSION['role'];
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -42,9 +51,9 @@ if (!isset($_SESSION['id']) || !isset($_SESSION['role'])) {
             <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2"
               style="width:40px; height:40px;">ICS</div>
             <div class="d-none d-sm-block">
-              <div class="fw-bold">IAN CARL SUSONDONCILLO</div>
-              <small class="text-muted">Applicant</small>
+              <div class="text-muted"><?php echo htmlspecialchars($userRole); ?></div>
             </div>
+
           </a>
           <ul class="dropdown-menu dropdown-menu-end">
             <li><a class="dropdown-item" href="#">Profile</a></li>
@@ -133,8 +142,8 @@ if (!isset($_SESSION['id']) || !isset($_SESSION['role'])) {
 
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="../javascript/logout.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="../javascript/logout.js"></script>
 </body>
 
 </html>
