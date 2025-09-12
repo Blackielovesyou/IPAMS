@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -8,6 +11,7 @@
   <link rel="stylesheet" href="../css/styles.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body class="d-flex flex-column min-vh-100">
@@ -32,7 +36,7 @@
     <div id="loginCard" class="card shadow w-100 mx-3 mx-sm-auto bg-white bg-opacity-75"
       style="max-width: 500px; backdrop-filter: blur(6px); border-radius: 1rem;">
       <div class="card-body p-4">
-        <h4 class="text-center mb-3">Welcome Back!</h4>
+        <h4 class="text-center mb-3">Welcome!</h4>
         <p class="text-center text-muted">Please log in to access your permit applications and dashboard.</p>
 
         <!-- Login Form -->
@@ -180,11 +184,41 @@
       </div>
     </div>
 
-    
+
   </main>
 
   <!-- JS -->
+  <script>
+    <?php if (isset($_SESSION['error'])): ?>
+      Swal.fire({
+        icon: 'error',
+        title: 'Login Failed',
+        text: '<?php echo $_SESSION['error']; ?>',
+        confirmButtonColor: '#d33',
+        confirmButtonText: 'Try Again'
+      });
+      <?php unset($_SESSION['error']); ?>
+    <?php endif; ?>
 
+    <?php if (isset($_SESSION['success'])): ?>
+      Swal.fire({
+        icon: 'success',
+        title: 'Login Successful',
+        text: 'Welcome back!',
+        showConfirmButton: false,
+        timer: 1500
+      }).then(() => {
+        <?php if ($_SESSION['success'] == 'superadmin'): ?>
+          window.location.href = "super_admin.php";
+        <?php elseif ($_SESSION['success'] == 'admin'): ?>
+          window.location.href = "admin_dashboard.php";
+        <?php else: ?>
+          window.location.href = "main_page.php";
+        <?php endif; ?>
+      });
+      <?php unset($_SESSION['success']); ?>
+    <?php endif; ?>
+  </script>
   <script src="../javascript/login_register_swap.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <?php include("loading_modal.php"); ?>

@@ -21,24 +21,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['id'] = $user['id'];
             $_SESSION['role'] = $user['role'];
 
-            if ($user['role'] == 'superadmin') {
-                header("Location: super_admin.php");
-                exit;
-            } elseif ($user['role'] == 'admin') {
-                header("Location:admin_dashboard.php");
-                exit;
-                
-            } else {
-                header("Location: main_page.php");
-                exit;
-            }
-
-
+            // ✅ Save success message and redirect back to loginform.php
+            $_SESSION['success'] = $user['role'];
+            header("Location: loginform.php");
+            exit;
         } else {
-            echo "❌ Wrong password!";
+            $_SESSION['error'] = "Wrong password!";
+            header("Location: loginform.php");
+            exit;
         }
     } else {
-        echo "❌ No user found with that email!";
+        $_SESSION['error'] = "No user found with that email!";
+        header("Location: loginform.php");
+        exit;
     }
 }
 ?>
