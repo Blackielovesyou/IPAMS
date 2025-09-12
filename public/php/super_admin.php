@@ -131,7 +131,7 @@
                     <div class="fw-semibold" style="font-size: clamp(0.9rem, 2vw, 1rem);">Administrator</div>
                     <small class="text-muted" style="font-size: clamp(0.7rem, 1.5vw, 0.85rem);">OBO Staff</small>
                 </div>
-                <button class="btn btn-primary btn-sm flex-shrink-0">Logout</button>
+                <button id="logoutBtn" class="btn btn-primary btn-sm flex-shrink-0">Logout</button>
             </div>
         </div>
     </nav>
@@ -232,6 +232,9 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../javascript/logout.js"></script>
+
 </body>
 
 </html>

@@ -2,6 +2,10 @@
 session_start();
 include("db.php"); // database connection file
 
+// Extend session lifetime (30 days)
+ini_set('session.cookie_lifetime', 60*60*24*30);
+ini_set('session.gc_maxlifetime', 60*60*24*30);
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST['email'];
     $password = $_POST['password'];
@@ -21,7 +25,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['id'] = $user['id'];
             $_SESSION['role'] = $user['role'];
 
-            // ✅ Save success message and redirect back to loginform.php
+            // ✅ Save success message and redirect
             $_SESSION['success'] = $user['role'];
             header("Location: loginform.php");
             exit;

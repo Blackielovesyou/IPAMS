@@ -1,3 +1,17 @@
+<?php
+session_start();
+
+// Redirect if not logged in
+if (!isset($_SESSION['id'])) {
+    header("Location: loginform.php");
+    exit;
+}
+
+// Get role only
+$userRole = $_SESSION['role'] ?? "Unknown Role";
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -32,12 +46,12 @@
                 <!-- Right: User Info + Logout -->
                 <div class="d-flex align-items-center gap-2" style="min-width: 0;">
                     <div class="text-end" style="min-width: 0;">
-                        <div style="font-size: clamp(0.9rem, 2vw, 1rem);" class="fw-semibold">Maria Santos</div>
-                        <small style="font-size: clamp(0.7rem, 1.5vw, 0.85rem);" class="text-muted">OBO Staff</small>
+                        <div style="font-size: clamp(0.9rem, 2vw, 1rem);" class="fw-semibold">
+                            <?php echo htmlspecialchars($userRole); ?>
+                        </div>
                     </div>
-                    <button class="btn btn-primary btn-sm flex-shrink-0">Log out</button>
+                    <button id="logoutBtn" class="btn btn-primary btn-sm flex-shrink-0">Log out</button>
                 </div>
-
             </div>
         </nav>
 
@@ -137,6 +151,9 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../javascript/logout.js"></script>
+
 </body>
 
 </html>

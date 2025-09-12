@@ -1,3 +1,12 @@
+<?php
+session_start();
+
+// ✅ Redirect to index.php if not logged in
+if (!isset($_SESSION['id']) || !isset($_SESSION['role'])) {
+    header("Location: index.php");
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -43,7 +52,7 @@
             <li>
               <hr class="dropdown-divider">
             </li>
-            <li><a class="dropdown-item" href="#">Logout</a></li>
+            <li><a id="logoutBtn" class="dropdown-item" href="#">Logout</a></li>
           </ul>
         </div>
       </div>
@@ -124,6 +133,8 @@
 
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../javascript/logout.js"></script>
 </body>
 
 </html>

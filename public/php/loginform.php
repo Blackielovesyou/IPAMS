@@ -1,5 +1,19 @@
 <?php
 session_start();
+
+// Redirect if already logged in BUT allow SweetAlert to show first
+if (isset($_SESSION['id']) && isset($_SESSION['role']) && !isset($_SESSION['success'])) {
+  if ($_SESSION['role'] == 'superadmin') {
+    header("Location: super_admin.php");
+    exit;
+  } elseif ($_SESSION['role'] == 'admin') {
+    header("Location: admin_dashboard.php");
+    exit;
+  } else {
+    header("Location: main_page.php");
+    exit;
+  }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
