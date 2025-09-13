@@ -1,3 +1,11 @@
+<?php
+session_start();
+// Redirect if not logged in
+if (!isset($_SESSION['id']) || !isset($_SESSION['role'])) {
+    header("Location: loginform.php");
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -43,10 +51,10 @@
 
     <!-- Form Content -->
     <div class="container py-4">
-       <form id="buildingPermitForm" method="POST" action="permit_submit.php" enctype="multipart/form-data">
+        <form id="buildingPermitForm" method="POST" action="permit_submit.php" enctype="multipart/form-data">
 
-        <!-- Hidden field for permit type -->
-    <input type="hidden" name="permit_type" value="building">
+            <!-- Hidden field for permit type -->
+            <input type="hidden" name="permit_type" value="building">
 
             <!-- Applicant Information -->
             <div class="card form-card mb-4">
@@ -60,19 +68,23 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label fw-medium">Full Name *</label>
-                            <input type="text" class="form-control" name="full_name" placeholder="Enter your full name" required>
+                            <input type="text" class="form-control" name="full_name" placeholder="Enter your full name"
+                                required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-medium">Contact Number *</label>
-                            <input type="tel" class="form-control" name="contact_number" placeholder="+63 XXX XXX XXXX" required>
+                            <input type="tel" class="form-control" name="contact_number" placeholder="+63 XXX XXX XXXX"
+                                required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-medium">Email Address *</label>
-                            <input type="email" class="form-control" name="email" placeholder="your.email@example.com" required>
+                            <input type="email" class="form-control" name="email" placeholder="your.email@example.com"
+                                required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-medium">Address *</label>
-                            <input type="text" class="form-control" name="address" placeholder="Complete address" required>
+                            <input type="text" class="form-control" name="address" placeholder="Complete address"
+                                required>
                         </div>
                     </div>
                 </div>
@@ -90,18 +102,21 @@
                     <div class="row g-3">
                         <div class="col-12">
                             <label class="form-label fw-medium">Project Location *</label>
-                            <textarea class="form-control" name="project_location" rows="3" placeholder="Complete address including lot number, block number, and subdivision" required></textarea>
+                            <textarea class="form-control" name="project_location" rows="3"
+                                placeholder="Complete address including lot number, block number, and subdivision"
+                                required></textarea>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-medium">Type of Construction *</label>
                             <select class="form-select" name="construction_type" required>
                                 <option value="">Select construction type</option>
-                                <option value="residential">Residential</option>
-                                <option value="commercial">Commercial</option>
-                                <option value="industrial">Industrial</option>
-                                <option value="institutional">Institutional</option>
-                                <option value="mixed-use">Mixed Use</option>
+                                <option value="Residential">Residential</option>
+                                <option value="Commercial">Commercial</option>
+                                <option value="Industrial">Industrial</option>
+                                <option value="Institutional">Institutional</option>
+                                <option value="Mixed Use">Mixed Use</option>
                             </select>
+
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-medium">Estimated Project Cost *</label>
@@ -133,7 +148,8 @@
                             <i class="bi bi-cloud-arrow-up fs-2 text-secondary mb-2"></i>
                             <p class="mb-1 fw-medium">Click to upload Application Form</p>
                             <small class="text-muted">PDF, JPG, PNG up to 10MB</small>
-                            <input type="file" name="application_form" id="applicationForm" class="d-none" accept=".pdf,.jpg,.jpeg,.png"
+                            <input type="file" name="application_form" id="applicationForm" class="d-none"
+                                accept=".pdf,.jpg,.jpeg,.png"
                                 onchange="handleFileUpload(this, 'applicationFormPreview')" required>
                         </div>
                         <div id="applicationFormPreview" class="file-preview">
@@ -149,8 +165,9 @@
                             <i class="bi bi-cloud-arrow-up fs-2 text-secondary mb-2"></i>
                             <p class="mb-1 fw-medium">Click to upload Location/Lot Plan</p>
                             <small class="text-muted">Original or certified copy</small>
-                            <input type="file" name="location_plan" id="locationPlan" class="d-none" accept=".pdf,.jpg,.jpeg,.png"
-                                onchange="handleFileUpload(this, 'locationPlanPreview')" required>
+                            <input type="file" name="location_plan" id="locationPlan" class="d-none"
+                                accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileUpload(this, 'locationPlanPreview')"
+                                required>
                         </div>
                         <div id="locationPlanPreview" class="file-preview">
                             <i class="bi bi-check-circle text-success me-2"></i>
@@ -165,8 +182,9 @@
                             <i class="bi bi-cloud-arrow-up fs-2 text-secondary mb-2"></i>
                             <p class="mb-1 fw-medium">Click to upload Tax Declaration</p>
                             <small class="text-muted">Current tax declaration of the property</small>
-                            <input type="file" name="tax_declaration" id="taxDeclaration" class="d-none" accept=".pdf,.jpg,.jpeg,.png"
-                                onchange="handleFileUpload(this, 'taxDeclarationPreview')" required>
+                            <input type="file" name="tax_declaration" id="taxDeclaration" class="d-none"
+                                accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileUpload(this, 'taxDeclarationPreview')"
+                                required>
                         </div>
                         <div id="taxDeclarationPreview" class="file-preview">
                             <i class="bi bi-check-circle text-success me-2"></i>
@@ -181,7 +199,8 @@
                             <i class="bi bi-cloud-arrow-up fs-2 text-secondary mb-2"></i>
                             <p class="mb-1 fw-medium">Click to upload Architectural Plans</p>
                             <small class="text-muted">Signed and sealed by licensed architect/engineer</small>
-                            <input type="file" name="architectural_plans" id="architecturalPlans" class="d-none" accept=".pdf,.jpg,.jpeg,.png"
+                            <input type="file" name="architectural_plans" id="architecturalPlans" class="d-none"
+                                accept=".pdf,.jpg,.jpeg,.png"
                                 onchange="handleFileUpload(this, 'architecturalPlansPreview')" required>
                         </div>
                         <div id="architecturalPlansPreview" class="file-preview">
@@ -197,7 +216,8 @@
                             <i class="bi bi-cloud-arrow-up fs-2 text-secondary mb-2"></i>
                             <p class="mb-1 fw-medium">Click to upload Barangay Clearance</p>
                             <small class="text-muted">Valid barangay clearance for construction</small>
-                            <input type="file" name="barangay_clearance" id="barangayClearance" class="d-none" accept=".pdf,.jpg,.jpeg,.png"
+                            <input type="file" name="barangay_clearance" id="barangayClearance" class="d-none"
+                                accept=".pdf,.jpg,.jpeg,.png"
                                 onchange="handleFileUpload(this, 'barangayClearancePreview')" required>
                         </div>
                         <div id="barangayClearancePreview" class="file-preview">
@@ -217,8 +237,8 @@
                                     <i class="bi bi-cloud-arrow-up fs-2 text-secondary mb-2"></i>
                                     <p class="mb-1 fw-medium">Click to upload Environmental Clearance</p>
                                     <small class="text-muted">PDF, JPG, PNG up to 10MB</small>
-                                    <input type="file" name="environmental_clearance" id="environmentalClearance" class="d-none"
-                                        accept=".pdf,.jpg,.jpeg,.png"
+                                    <input type="file" name="environmental_clearance" id="environmentalClearance"
+                                        class="d-none" accept=".pdf,.jpg,.jpeg,.png"
                                         onchange="handleFileUpload(this, 'environmentalClearancePreview')">
                                 </div>
                                 <div id="environmentalClearancePreview" class="file-preview">
@@ -233,7 +253,8 @@
                                     <i class="bi bi-cloud-arrow-up fs-2 text-secondary mb-2"></i>
                                     <p class="mb-1 fw-medium">Click to upload Contract of Lease</p>
                                     <small class="text-muted">PDF, JPG, PNG up to 10MB</small>
-                                    <input type="file" name="contract_of_lease" id="contractOfLease" class="d-none" accept=".pdf,.jpg,.jpeg,.png"
+                                    <input type="file" name="contract_of_lease" id="contractOfLease" class="d-none"
+                                        accept=".pdf,.jpg,.jpeg,.png"
                                         onchange="handleFileUpload(this, 'contractOfLeasePreview')">
                                 </div>
                                 <div id="contractOfLeasePreview" class="file-preview">
@@ -303,6 +324,6 @@
     <script src="../javascript/permit.js"></script>
 
 
-</body> 
+</body>
 
 </html>

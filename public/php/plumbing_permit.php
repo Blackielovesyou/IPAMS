@@ -1,3 +1,12 @@
+<?php
+session_start();
+// Redirect if not logged in
+if (!isset($_SESSION['id']) || !isset($_SESSION['role'])) {
+    header("Location: loginform.php");
+    exit;
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -42,8 +51,8 @@
 
     <!-- Form Content -->
     <div class="container py-4">
-        <form id="occupancyPermitForm" class="mx-auto" style="max-width: 1000px;" method="POST" action="permit_submit.php"
-            enctype="multipart/form-data">
+        <form id="occupancyPermitForm" class="mx-auto" style="max-width: 1000px;" method="POST"
+            action="permit_submit.php" enctype="multipart/form-data">
 
             <!-- Applicant Information -->
             <div class="card form-card mb-4">
@@ -106,13 +115,14 @@
                             <!-- Types of Installation * -->
                             <label class="form-label fw-medium">Types of Installation *</label>
                             <select class="form-select" name="installation_type" id="installation_type" required>
-                                <option value="">Select installation type</option>
-                                <option value="new">New Installation</option>
-                                <option value="extension">Extension of Existing Installation</option>
-                                <option value="upgrade">Upgrading / Modernization</option>
-                                <option value="temporary">Temporary Installation</option>
-                                <option value="repair">Repair / Maintenance</option>
+                                <option selected disabled>Select installation type</option>
+                                <option>New Installation</option>
+                                <option>Extension of Existing Installation</option>
+                                <option>Upgrading / Modernization</option>
+                                <option>Temporary Installation</option>
+                                <option>Repair / Maintenance</option>
                             </select>
+
                         </div>
 
                         <div class="col-md-6">

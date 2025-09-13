@@ -1,3 +1,13 @@
+
+<?php
+session_start();
+// Redirect if not logged in
+if (!isset($_SESSION['id']) || !isset($_SESSION['role'])) {
+    header("Location: loginform.php");
+    exit;
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -44,8 +54,8 @@
 
     <!-- Electrical Permit Form -->
     <div class="container py-4">
-        <form id="electricalPermitForm" class="mx-auto" style="max-width: 1000px;"
-              method="POST" action="permit_submit.php" enctype="multipart/form-data">
+        <form id="electricalPermitForm" class="mx-auto" style="max-width: 1000px;" method="POST"
+            action="permit_submit.php" enctype="multipart/form-data">
 
             <!-- Hidden input to identify permit type -->
             <input type="hidden" name="permit_type" value="electrical">
@@ -62,19 +72,23 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label fw-medium">Full Name *</label>
-                            <input type="text" class="form-control" name="full_name" placeholder="Enter your full name" required>
+                            <input type="text" class="form-control" name="full_name" placeholder="Enter your full name"
+                                required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-medium">Contact Number *</label>
-                            <input type="tel" class="form-control" name="contact_number" placeholder="+63 XXX XXX XXXX" required>
+                            <input type="tel" class="form-control" name="contact_number" placeholder="+63 XXX XXX XXXX"
+                                required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-medium">Email Address *</label>
-                            <input type="email" class="form-control" name="email" placeholder="your.email@example.com" required>
+                            <input type="email" class="form-control" name="email" placeholder="your.email@example.com"
+                                required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-medium">Address *</label>
-                            <input type="text" class="form-control" name="address" placeholder="Complete address" required>
+                            <input type="text" class="form-control" name="address" placeholder="Complete address"
+                                required>
                         </div>
                     </div>
                 </div>
@@ -100,13 +114,15 @@
                             <label class="form-label fw-medium">Types of Installation *</label>
                             <select class="form-select" name="installation_type" required>
                                 <option value="">Select installation type</option>
-                                <option value="new">New Installation</option>
-                                <option value="extension">Extension of Existing Installation</option>
-                                <option value="upgrade">Upgrading / Modernization</option>
-                                <option value="temporary">Temporary Installation</option>
-                                <option value="repair">Repair / Maintenance</option>
+                                <option value="New Installation">New Installation</option>
+                                <option value="Extension of Existing Installation">Extension of Existing Installation
+                                </option>
+                                <option value="Upgrading / Modernization">Upgrading / Modernization</option>
+                                <option value="Temporary Installation">Temporary Installation</option>
+                                <option value="Repair / Maintenance">Repair / Maintenance</option>
                             </select>
                         </div>
+
 
                         <div class="col-md-6">
                             <label class="form-label fw-medium">Electrical Work Scope *</label>
@@ -143,7 +159,9 @@
                             <i class="bi bi-cloud-arrow-up fs-2 text-secondary mb-2"></i>
                             <p class="mb-1 fw-medium">Click to upload Certificate of Completion</p>
                             <small class="text-muted">PDF, JPG, PNG up to 10MB</small>
-                            <input type="file" id="completionCert" name="completion_cert" class="d-none" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileUpload(this, 'completionCertPreview')" required>
+                            <input type="file" id="completionCert" name="completion_cert" class="d-none"
+                                accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileUpload(this, 'completionCertPreview')"
+                                required>
                         </div>
                         <div id="completionCertPreview" class="file-preview">
                             <i class="bi bi-check-circle text-success me-2"></i>
@@ -158,7 +176,9 @@
                             <i class="bi bi-cloud-arrow-up fs-2 text-secondary mb-2"></i>
                             <p class="mb-1 fw-medium">Click to upload As-Built Plans</p>
                             <small class="text-muted">Signed and sealed by licensed professional</small>
-                            <input type="file" id="asBuiltPlans" name="as_built_plans" class="d-none" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileUpload(this, 'asBuiltPlansPreview')" required>
+                            <input type="file" id="asBuiltPlans" name="as_built_plans" class="d-none"
+                                accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileUpload(this, 'asBuiltPlansPreview')"
+                                required>
                         </div>
                         <div id="asBuiltPlansPreview" class="file-preview">
                             <i class="bi bi-check-circle text-success me-2"></i>
@@ -173,7 +193,9 @@
                             <i class="bi bi-cloud-arrow-up fs-2 text-secondary mb-2"></i>
                             <p class="mb-1 fw-medium">Click to upload Barangay Clearance</p>
                             <small class="text-muted">Certificate from local barangay</small>
-                            <input type="file" id="electricalCert" name="electrical_certificate" class="d-none" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileUpload(this, 'electricalCertPreview')" required>
+                            <input type="file" id="electricalCert" name="electrical_certificate" class="d-none"
+                                accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileUpload(this, 'electricalCertPreview')"
+                                required>
                         </div>
                         <div id="electricalCertPreview" class="file-preview">
                             <i class="bi bi-check-circle text-success me-2"></i>
@@ -188,7 +210,9 @@
                             <i class="bi bi-cloud-arrow-up fs-2 text-secondary mb-2"></i>
                             <p class="mb-1 fw-medium">Click to upload Building Permit</p>
                             <small class="text-muted">Certificate from licensed professional</small>
-                            <input type="file" id="plumbingCert" name="building_permit" class="d-none" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileUpload(this, 'plumbingCertPreview')" required>
+                            <input type="file" id="plumbingCert" name="building_permit" class="d-none"
+                                accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileUpload(this, 'plumbingCertPreview')"
+                                required>
                         </div>
                         <div id="plumbingCertPreview" class="file-preview">
                             <i class="bi bi-check-circle text-success me-2"></i>
@@ -203,7 +227,9 @@
                             <i class="bi bi-cloud-arrow-up fs-2 text-secondary mb-2"></i>
                             <p class="mb-1 fw-medium">Click to upload Electrical Inspection Report</p>
                             <small class="text-muted">Certificate from Fire or Electrical Bureau</small>
-                            <input type="file" id="fireSafetyCert" name="inspection_report" class="d-none" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileUpload(this, 'fireSafetyCertPreview')" required>
+                            <input type="file" id="fireSafetyCert" name="inspection_report" class="d-none"
+                                accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileUpload(this, 'fireSafetyCertPreview')"
+                                required>
                         </div>
                         <div id="fireSafetyCertPreview" class="file-preview">
                             <i class="bi bi-check-circle text-success me-2"></i>
@@ -270,4 +296,5 @@
     <script src="../javascript/permit.js"></script>
 
 </body>
+
 </html>
