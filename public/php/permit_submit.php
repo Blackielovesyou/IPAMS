@@ -14,12 +14,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $additional_notes = trim($_POST['additional_notes'] ?? $_POST['additionalNotes'] ?? '');
 
     // --- Permit-specific fields ---
-    $construction_type = $_POST['construction_type'] ?? null; // will now capture the full string
-    $estimated_cost = isset($_POST['estimated_cost']) ? (float) $_POST['estimated_cost'] : null; // building
-    $installation_type = $_POST['installation_type'] ?? null; // will now capture the full string
-    $work_scope = $_POST['work_scope'] ?? null; // electrical
-    $permit_purpose = $_POST['permit_purpose'] ?? null; // plumbing
-    $date_issued = $_POST['date_issued'] ?? null; // occupancy
+    $construction_type = $_POST['construction_type'] ?? null;
+    $estimated_cost = isset($_POST['estimated_cost']) ? (float) $_POST['estimated_cost'] : null;
+    $installation_type = $_POST['installation_type'] ?? null;
+    $work_scope = $_POST['work_scope'] ?? null;
+    $permit_purpose = $_POST['permit_purpose'] ?? null;
+    $date_issued = $_POST['date_issued'] ?? null;
 
     // --- Insert application ---
     $sql = "INSERT INTO permit_applications
@@ -30,6 +30,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
+        // Log the error
+        $ip = $_SERVER['REMOTE_ADDR'];
+        $user_id = $_SESSION['id'] ?? null;
+        $role = $_SESSION['role'] ?? 'applicant';
+        $action_type = "submit_permit_failed";
+        $content = "Database error while submitting $permit_type permit: " . $conn->error;
+
+        $log = $conn->prepare("INSERT INTO system_logs (user_id, role, ip_address, action_type, content) VALUES (?, ?, ?, ?, ?)");
+        $log->bind_param("issss", $user_id, $role, $ip, $action_type, $content);
+        $log->execute();
+        $log->close();
+
         $_SESSION['error'] = "Database error: " . $conn->error;
         header("Location: permit_error.php");
         exit;
@@ -53,6 +65,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     );
 
     if (!$stmt->execute()) {
+        // Log failed insert
+        $ip = $_SERVER['REMOTE_ADDR'];
+        $user_id = $_SESSION['id'] ?? null;
+        $role = $_SESSION['role'] ?? 'applicant';
+        $action_type = "submit_permit_failed";
+        $content = "Error inserting $permit_type permit: " . $stmt->error;
+
+        $log = $conn->prepare("INSERT INTO system_logs (user_id, role, ip_address, action_type, content) VALUES (?, ?, ?, ?, ?)");
+        $log->bind_param("issss", $user_id, $role, $ip, $action_type, $content);
+        $log->execute();
+        $log->close();
+
         $_SESSION['error'] = "Error inserting application: " . $stmt->error;
         header("Location: permit_error.php");
         exit;
@@ -60,7 +84,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $application_id = $stmt->insert_id;
 
-    // --- Get the generated 6-digit Application number ---
+    // --- Get the generated Application number ---
     $app_query = $conn->prepare("SELECT Application FROM permit_applications WHERE id = ?");
     $app_query->bind_param("i", $application_id);
     $app_query->execute();
@@ -70,8 +94,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // --- File upload handling ---
     $upload_dir = __DIR__ . "/../upload/";
-    if (!is_dir($upload_dir))
-        mkdir($upload_dir, 0777, true);
+    if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
 
     $file_labels = [
         'completionCert' => 'Plumbing Permit Application Form',
@@ -103,8 +126,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
 
+    // --- Log success ---
+    $ip = $_SERVER['REMOTE_ADDR'];
+    $user_id = $_SESSION['id'] ?? null;
+    $role = $_SESSION['role'] ?? 'applicant';
+    $action_type = "submit_permit";
+    $content = "Submitted $permit_type permit application (#$application_number) by $full_name";
+
+    $log = $conn->prepare("INSERT INTO system_logs (user_id, role, ip_address, action_type, content) VALUES (?, ?, ?, ?, ?)");
+    $log->bind_param("issss", $user_id, $role, $ip, $action_type, $content);
+    $log->execute();
+    $log->close();
+
     $_SESSION['success'] = true;
-    // --- Redirect including the 6-digit Application number ---
     header("Location: permit_success.php?application=" . $application_number);
     exit;
 }
