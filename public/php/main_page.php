@@ -1,18 +1,25 @@
 <?php
 session_start();
 
-// Prevent caching (for logout/back button issue)
+// Prevent caching
 header("Cache-Control: no-cache, no-store, must-revalidate");
 header("Pragma: no-cache");
 header("Expires: 0");
 
-// Redirect if not logged in
+// If not logged in → block (go back, no redirect URL shown)
 if (!isset($_SESSION['id']) || !isset($_SESSION['role'])) {
-  header("Location: loginform.php");
-  exit;
+    echo "<script>window.history.back();</script>";
+    exit;
 }
 
-// ✅ Get the role from session
+// Only admin can access
+if ($_SESSION['role'] !== 'Applicant') {
+    // Stay on current page instead of redirecting
+    echo "<script>window.history.back();</script>";
+    exit;
+}
+
+// ✅ If reached here → admin is allowed
 $userRole = $_SESSION['role'];
 ?>
 

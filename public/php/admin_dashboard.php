@@ -7,15 +7,21 @@ header("Cache-Control: no-cache, no-store, must-revalidate");
 header("Pragma: no-cache");
 header("Expires: 0");
 
-// Redirect if not logged in
+// If not logged in → block
 if (!isset($_SESSION['id']) || !isset($_SESSION['role'])) {
-    header("Location: loginform.php");
+    echo "<script>
+        localStorage.setItem('lastPage', window.location.href);
+        window.history.back();
+    </script>";
     exit;
 }
 
-// Restrict access to admin role only
+// Only superadmin can access
 if ($_SESSION['role'] !== 'admin') {
-    header("Location: main_page.php"); // redirect non-admin users
+    echo "<script>
+        localStorage.setItem('lastPage', window.location.href);
+        window.history.back();
+    </script>";
     exit;
 }
 
