@@ -239,7 +239,7 @@ if ($result) {
                                                 $type_text = $app['installation_type'];
                                                 break;
                                         }
-                                        $formatted_id = str_pad($app['id'], 6, '0', STR_PAD_LEFT);
+                                        $formatted_id = $app['application_number']; // use DB column directly
                                         echo $prefix . '-' . date('Y') . '-' . $formatted_id . '-' . htmlspecialchars($type_text);
                                         ?>
                                     </td>
