@@ -38,7 +38,18 @@ if ($result) {
         $applications[] = $row;
     }
 }
+
+// Fetch app name from database
+$appName = "MyApp"; // fallback
+$sqlApp = "SELECT appname FROM app_info ORDER BY id LIMIT 1";
+$resultApp = $conn->query($sqlApp);
+
+if ($resultApp && $resultApp->num_rows > 0) {
+    $rowApp = $resultApp->fetch_assoc();
+    $appName = $rowApp['appname'];
+}
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -177,7 +188,7 @@ if ($result) {
         }
 
         .table th.action {
-            width: 5%;
+            width: 0%;
         }
 
         /* ✅ Remove DataTables sorting arrows */
@@ -235,8 +246,11 @@ if ($result) {
                     <i class="bi bi-list"></i>
                 </button>
                 <div class="d-none d-sm-flex flex-column dashboard-title" style="min-width: 0;">
-                    <span style="font-size: clamp(0.9rem, 2vw, 1.25rem);" class="fw-bold mb-0">IPAMS</span>
+                    <span style="font-size: clamp(0.9rem, 2vw, 1.25rem);" class="fw-bold mb-0">
+                        <?php echo htmlspecialchars($appName); ?>
+                    </span>
                 </div>
+
             </div>
 
             <!-- ✅ Right: Role Dropdown -->
@@ -255,276 +269,246 @@ if ($result) {
         </div>
     </nav>
 
-    <!-- ✅ Sidebar -->
+
+    <!-- ✅ Main Content -->
+    <!-- Sidebar -->
     <div class="sidebar bg-white text-dark p-3">
         <ul class="nav flex-column">
             <li class="nav-item"><a href="#" class="nav-link active" data-section="dashboard">Dashboard</a></li>
-            <li class="nav-item"><a href="#" class="nav-link" data-section="applications">Application Management</a>
-            </li>
-            <li class="nav-item"><a href="#" class="nav-link" data-section="permits">Permit Applications</a></li>
+            <li class="nav-item"><a href="#" class="nav-link" data-section="applications">Permit Applications</a></li>
             <li class="nav-item"><a href="#" class="nav-link" data-section="reports">Reports</a></li>
             <li class="nav-item"><a href="#" class="nav-link" data-section="settings">Settings</a></li>
         </ul>
     </div>
 
-
-    <!-- ✅ Main Content -->
     <div class="main-content">
 
-    <!-- ✅ Dashboard Section -->
-    <div id="dashboard" class="content-section">
-        <!-- Stats Cards -->
-        <div class="row text-center g-3 my-3 px-3">
-            <div class="col-6 col-md-3">
-                <div class="card text-success bg-success bg-opacity-10 border-0 p-4" style="min-height: 140px;">
-                    <h5>Pending Review</h5>
-                    <p class="h3">
-                        <?php echo count(array_filter($applications, fn($a) => $a['permit_type'] === 'building')); ?>
-                    </p>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="card text-warning bg-warning bg-opacity-10 border-0 p-4" style="min-height: 140px;">
-                    <h5>For Inspection</h5>
-                    <p class="h3">
-                        <?php echo count(array_filter($applications, fn($a) => $a['permit_type'] === 'electrical')); ?>
-                    </p>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="card text-info bg-info bg-opacity-10 border-0 p-4" style="min-height: 140px;">
-                    <h5>Approved Today</h5>
-                    <p class="h3">
-                        <?php $today = date('Y-m-d');
-                        echo count(array_filter($applications, fn($a) => substr($a['created_at'], 0, 10) === $today)); ?>
-                    </p>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="card text-primary bg-primary bg-opacity-10 border-0 p-4" style="min-height: 140px;">
-                    <h5>Total Applications</h5>
-                    <p class="h3"><?php echo count($applications); ?></p>
-                </div>
-            </div>
-        </div>
+        <!-- ✅ Dashboard Section -->
+        <!-- ✅ Dashboard Section -->
+        <div id="dashboard" class="content-section">
 
-        <!-- Filter Section -->
-        <div class="row g-2 px-3 mb-3">
-            <div class="col-12 col-md-3">
-                <select class="form-select" id="statusFilter">
-                    <option value="all" selected>Filter by Status</option>
-                    <option value="pending">Pending</option>
-                    <option value="approved">Approved</option>
-                    <option value="rejected">Rejected</option>
-                </select>
+            <!-- ✅ Dashboard Title -->
+            <div class="row px-3">
+                <h4 class="fw-bold mb-3">Dashboard Overview</h4>
             </div>
-            <div class="col-12 col-md-3">
-                <select class="form-select" id="typeFilter">
-                    <option value="all" selected>Permit Type</option>
-                    <option value="building">Building</option>
-                    <option value="electrical">Electrical</option>
-                    <option value="plumbing">Plumbing</option>
-                    <option value="occupancy">Occupancy</option>
-                </select>
-            </div>
-            <div class="col-12 col-md-4">
-                <input type="text" id="searchInput" class="form-control" placeholder="Search by Application num">
-            </div>
-            <div class="col-12 col-md-2">
-                <button class="btn btn-primary w-100" id="searchBtn">Search</button>
-            </div>
-        </div>
 
-        <!-- Permit Applications Table -->
-        <div class="row px-3 mb-5" style="margin-top: 80px;">
-            <h4>Permit Applications</h4>
-            <div class="table-responsive">
-                <table class="table table-striped table-bordered align-middle mt-2" id="applicationsTable">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="id">ID</th>
-                            <th class="applicant">Applicant</th>
-                            <th class="type">Type</th>
-                            <th class="contact">Contact</th>
-                            <th class="email">Email</th>
-                            <th class="date">Date Submitted</th>
-                            <th class="status">Status</th>
-                            <th class="action">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (!empty($applications)): ?>
-                            <?php foreach ($applications as $app): ?>
-                                <tr>
-                                    <!-- Formatted ID -->
-                                    <td data-id="<?php echo str_pad($app['id'], 6, '0', STR_PAD_LEFT); ?>">
-                                        <?php
-                                        $prefix = '';
-                                        $type_text = '';
-                                        switch ($app['permit_type']) {
-                                            case 'building':
-                                                $prefix = 'BP';
-                                                $type_text = $app['construction_type'];
-                                                break;
-                                            case 'electrical':
-                                                $prefix = 'EP';
-                                                $type_text = $app['installation_type'];
-                                                break;
-                                            case 'occupancy':
-                                                $prefix = 'OP';
-                                                $type_text = $app['construction_type'];
-                                                break;
-                                            case 'plumbing':
-                                                $prefix = 'PP';
-                                                $type_text = $app['installation_type'];
-                                                break;
-                                        }
-                                        $formatted_id = $app['application_number']; // use DB column directly
-                                        echo $prefix . '-' . date('Y') . '-' . $formatted_id . '-' . htmlspecialchars($type_text);
-                                        ?>
-                                    </td>
+            <!-- ✅ Stats Cards -->
+            <div class="row text-center g-3 mb-4 px-3">
+                <div class="col-6 col-md-3">
+                    <div class="card shadow-sm text-success bg-success bg-opacity-10 border-0 p-4 h-100">
+                        <h6 class="fw-bold mb-2">Pending Review</h6>
+                        <p class="h3 mb-0">
+                            <?php echo count(array_filter($applications, fn($a) => $a['permit_type'] === 'building')); ?>
+                        </p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card shadow-sm text-warning bg-warning bg-opacity-10 border-0 p-4 h-100">
+                        <h6 class="fw-bold mb-2">For Inspection</h6>
+                        <p class="h3 mb-0">
+                            <?php echo count(array_filter($applications, fn($a) => $a['permit_type'] === 'electrical')); ?>
+                        </p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card shadow-sm text-info bg-info bg-opacity-10 border-0 p-4 h-100">
+                        <h6 class="fw-bold mb-2">Approved Today</h6>
+                        <p class="h3 mb-0">
+                            <?php
+                            $today = date('Y-m-d');
+                            echo count(array_filter($applications, fn($a) => substr($a['created_at'], 0, 10) === $today));
+                            ?>
+                        </p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card shadow-sm text-primary bg-primary bg-opacity-10 border-0 p-4 h-100">
+                        <h6 class="fw-bold mb-2">Total Applications</h6>
+                        <p class="h3 mb-0"><?php echo count($applications); ?></p>
+                    </div>
+                </div>
+            </div>
 
-                                    <!-- Applicant Name Only -->
-                                    <td><?php echo htmlspecialchars($app['full_name']); ?></td>
-                                    <td><?php echo ucfirst(htmlspecialchars($app['permit_type'])); ?></td>
-                                    <td><?php echo htmlspecialchars($app['contact_number']); ?></td>
-                                    <td><?php echo htmlspecialchars($app['email']); ?></td>
-                                    <td><?php echo date("M d, Y", strtotime($app['created_at'])); ?></td>
-                                    <td><?php echo ucfirst(htmlspecialchars($app['status'])); ?></td>
-                                    <td>
-                                        <a href="review.php?id=<?php echo $app['id']; ?>"
-                                            class="btn btn-primary btn-sm">Review</a>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
+            <!-- ✅ Latest Applications Table -->
+            <div class="row px-3 mt-5 mb-5">
+                <h4 class="fw-bold mb-3">Latest Permit Applications</h4>
+                <div class="table-responsive shadow-sm rounded">
+                    <table class="table table-striped table-hover table-bordered align-middle mb-0">
+                        <thead class="table-light">
                             <tr>
-                                <td colspan="8" class="text-center">No applications found.</td>
+                                <th class="id">ID</th>
+                                <th class="applicant">Applicant</th>
+                                <th class="type">Type</th>
+                                <th class="date">Date Submitted</th>
+                                <th class="status">Status</th>
+                                <th class="action">Action</th>
                             </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <?php
+                            if (!empty($applications)):
+                                $latestFive = array_slice($applications, 0, 5);
+                                foreach ($latestFive as $app): ?>
+                                    <tr>
+                                        <td><?php echo str_pad($app['id'], 6, '0', STR_PAD_LEFT); ?></td>
+                                        <td><?php echo htmlspecialchars($app['full_name']); ?></td>
+                                        <td><?php echo ucfirst(htmlspecialchars($app['permit_type'])); ?></td>
+                                        <td><?php echo date("M d, Y", strtotime($app['created_at'])); ?></td>
+                                        <td><?php echo ucfirst(htmlspecialchars($app['status'])); ?></td>
+                                        <td>
+                                            <a href="review.php?id=<?php echo $app['id']; ?>"
+                                                class="btn btn-primary btn-sm">Review</a>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="6" class="text-center">No recent applications.</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ✅ Permit Applications Section -->
+        <div id="applications" class="content-section d-none">
+            <div class="row px-3 mb-5">
+                <h4 class="fw-bold mb-3">All Permit Applications</h4>
+                <div class="table-responsive shadow-sm rounded">
+                    <table id="applicationsTable"
+                        class="table table-striped table-hover table-bordered align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="id">ID</th>
+                                <th class="applicant">Applicant</th>
+                                <th class="type">Type</th>
+                                <th class="date">Date Submitted</th>
+                                <th class="status">Status</th>
+                                <th class="action">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (!empty($applications)):
+                                foreach ($applications as $app): ?>
+                                    <tr>
+                                        <td data-id="<?php echo str_pad($app['id'], 6, '0', STR_PAD_LEFT); ?>">
+                                            <?php echo str_pad($app['id'], 6, '0', STR_PAD_LEFT); ?>
+                                        </td>
+                                        <td><?php echo htmlspecialchars($app['full_name']); ?></td>
+                                        <td><?php echo ucfirst(htmlspecialchars($app['permit_type'])); ?></td>
+                                        <td><?php echo date("M d, Y", strtotime($app['created_at'])); ?></td>
+                                        <td><?php echo ucfirst(htmlspecialchars($app['status'])); ?></td>
+                                        <td>
+                                            <a href="review.php?id=<?php echo $app['id']; ?>" class="btn btn-primary btn-sm">
+                                                Review
+                                            </a>
+                                        </td>
+                                    </tr>
+                                <?php endforeach;
+                            else: ?>
+                                <tr>
+                                    <td colspan="6" class="text-center">No applications found.</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- ✅ Application Management Section -->
-    <div id="applications" class="content-section d-none">
-        <h4>Application Management</h4>
-        <p>Content for Application Management goes here.</p>
-    </div>
+        <!-- ✅ Scripts -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script src="../javascript/logout.js"></script>
 
-    <!-- ✅ Reports Section -->
-    <div id="reports" class="content-section d-none">
-        <h4>Reports</h4>
-        <p>Content for Reports goes here.</p>
-    </div>
+        <!-- ✅ Full Updated Script -->
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                document.body.classList.add("loaded")
+                const sidebarToggle = document.getElementById("sidebarToggle")
+                const sidebar = document.querySelector(".sidebar")
+                const tableRows = document.querySelectorAll("#applicationsTable tbody tr")
 
-    <!-- ✅ Settings Section -->
-    <div id="settings" class="content-section d-none">
-        <h4>Settings</h4>
-        <p>Settings content goes here.</p>
-    </div>
-
-</div>
-
-
-
-    <!-- ✅ Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="../javascript/logout.js"></script>
-
-    <!-- ✅ Full Updated Script -->
-    <script>
-document.addEventListener("DOMContentLoaded", function () {
-    // ✅ Fade in after styles are ready
-    document.body.classList.add("loaded");
-
-    // ✅ Sidebar toggle
-    const sidebarToggle = document.getElementById("sidebarToggle");
-    const sidebar = document.querySelector(".sidebar");
-
-    if (sidebarToggle) {
-        sidebarToggle.addEventListener("click", function () {
-            document.body.classList.toggle("sidebar-visible");
-            localStorage.setItem(
-                "sidebarState",
-                document.body.classList.contains("sidebar-visible") ? "open" : "closed"
-            );
-        });
-    }
-
-    // ✅ Restore sidebar state
-    if (localStorage.getItem("sidebarState") === "open") {
-        document.body.classList.add("sidebar-visible");
-    }
-
-    // ✅ Close sidebar on outside click (mobile only)
-    document.addEventListener("click", function (e) {
-        if (window.innerWidth < 992 && sidebar && sidebarToggle) {
-            if (
-                !sidebar.contains(e.target) &&
-                !sidebarToggle.contains(e.target)
-            ) {
-                document.body.classList.remove("sidebar-visible");
-                localStorage.setItem("sidebarState", "closed");
-            }
-        }
-    });
-
-    // ✅ Filters
-    const typeFilter = document.getElementById("typeFilter");
-    const statusFilter = document.getElementById("statusFilter");
-    const searchBtn = document.getElementById("searchBtn");
-    const searchInput = document.getElementById("searchInput");
-    const tableRows = document.querySelectorAll("#applicationsTable tbody tr");
-
-    // Helper to reset all rows visible
-    const resetRows = () => tableRows.forEach(row => (row.style.display = ""));
-
-    // Filter by type
-    if (typeFilter) {
-        typeFilter.addEventListener("change", function () {
-            resetRows();
-            const filterValue = this.value.toLowerCase();
-            tableRows.forEach(row => {
-                const typeCell = row.cells[2]?.textContent.toLowerCase() || "";
-                if (filterValue !== "all" && typeCell !== filterValue) {
-                    row.style.display = "none";
+                if (sidebarToggle) {
+                    sidebarToggle.addEventListener("click", function () {
+                        document.body.classList.toggle("sidebar-visible")
+                        localStorage.setItem("sidebarState", document.body.classList.contains("sidebar-visible") ? "open" : "closed")
+                    })
                 }
-            });
-        });
-    }
 
-    // Filter by status
-    if (statusFilter) {
-        statusFilter.addEventListener("change", function () {
-            resetRows();
-            const filterValue = this.value.toLowerCase();
-            tableRows.forEach(row => {
-                const statusCell = row.cells[6]?.textContent.toLowerCase() || "";
-                if (filterValue !== "all" && statusCell !== filterValue) {
-                    row.style.display = "none";
+                if (localStorage.getItem("sidebarState") === "open") {
+                    document.body.classList.add("sidebar-visible")
                 }
-            });
-        });
-    }
 
-    // Search by Application Number
-    if (searchBtn && searchInput) {
-        const doSearch = () => {
-            const searchValue = searchInput.value.trim().toLowerCase();
-            tableRows.forEach(row => {
-                const appNum = row.querySelector("td[data-id]")?.getAttribute("data-id")?.toLowerCase() || "";
-                row.style.display = (searchValue === "" || appNum.includes(searchValue)) ? "" : "none";
-            });
-        };
-        searchBtn.addEventListener("click", doSearch);
-        searchInput.addEventListener("keyup", doSearch);
-    }
-});
-</script>
+                document.addEventListener("click", function (e) {
+                    if (window.innerWidth < 992 && sidebar && sidebarToggle) {
+                        if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
+                            document.body.classList.remove("sidebar-visible")
+                            localStorage.setItem("sidebarState", "closed")
+                        }
+                    }
+                })
+
+                tableRows.forEach((row, index) => { if (index >= 5) row.style.display = "none" })
+
+                document.querySelectorAll(".sidebar .nav-link").forEach(link => {
+                    link.addEventListener("click", function (e) {
+                        e.preventDefault()
+                        document.querySelectorAll(".sidebar .nav-link").forEach(l => l.classList.remove("active"))
+                        this.classList.add("active")
+                        document.querySelectorAll(".content-section").forEach(sec => sec.classList.add("d-none"))
+                        const section = this.getAttribute("data-section")
+                        const target = document.getElementById(section)
+                        if (target) target.classList.remove("d-none")
+                        if (section === "applications") { tableRows.forEach(row => row.style.display = "") }
+                        if (section === "dashboard") { tableRows.forEach((row, index) => { row.style.display = index < 5 ? "" : "none" }) }
+                    })
+                })
+
+                const typeFilter = document.getElementById("typeFilter")
+                const statusFilter = document.getElementById("statusFilter")
+                const searchBtn = document.getElementById("searchBtn")
+                const searchInput = document.getElementById("searchInput")
+                const resetRows = () => tableRows.forEach(row => (row.style.display = ""))
+
+                if (typeFilter) {
+                    typeFilter.addEventListener("change", function () {
+                        resetRows()
+                        const filterValue = this.value.toLowerCase()
+                        tableRows.forEach(row => {
+                            const typeCell = row.cells[2]?.textContent.toLowerCase() || ""
+                            if (filterValue !== "all" && typeCell !== filterValue) { row.style.display = "none" }
+                        })
+                    })
+                }
+
+                if (statusFilter) {
+                    statusFilter.addEventListener("change", function () {
+                        resetRows()
+                        const filterValue = this.value.toLowerCase()
+                        tableRows.forEach(row => {
+                            const statusCell = row.cells[6]?.textContent.toLowerCase() || ""
+                            if (filterValue !== "all" && statusCell !== filterValue) { row.style.display = "none" }
+                        })
+                    })
+                }
+
+                if (searchBtn && searchInput) {
+                    const doSearch = () => {
+                        const searchValue = searchInput.value.trim().toLowerCase()
+                        tableRows.forEach(row => {
+                            const appNum = row.querySelector("td[data-id]")?.getAttribute("data-id")?.toLowerCase() || ""
+                            row.style.display = (searchValue === "" || appNum.includes(searchValue)) ? "" : "none"
+                        })
+                    }
+                    searchBtn.addEventListener("click", doSearch)
+                    searchInput.addEventListener("keyup", doSearch)
+                }
+            })
+        </script>
 
 </body>
 

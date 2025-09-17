@@ -1,5 +1,6 @@
 <?php
 session_start();
+include("db.php"); // Include your DB connection
 
 // Prevent caching
 header("Cache-Control: no-cache, no-store, must-revalidate");
@@ -26,6 +27,16 @@ if ($_SESSION['role'] !== 'superadmin') {
 
 // ✅ Allowed
 $userRole = $_SESSION['role'];
+
+// Fetch app name from database
+$appName = "MyApp"; // fallback
+$sqlApp = "SELECT appname FROM app_info ORDER BY id LIMIT 1";
+$resultApp = $conn->query($sqlApp);
+
+if ($resultApp && $resultApp->num_rows > 0) {
+    $rowApp = $resultApp->fetch_assoc();
+    $appName = $rowApp['appname'];
+}
 ?>
 
 <!DOCTYPE html>
@@ -41,127 +52,153 @@ $userRole = $_SESSION['role'];
     <!-- DataTables CSS -->
     <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <style>
-/* ✅ Hide page until fully styled */
-body {
-    min-height: 100vh;
-    visibility: hidden;
-    opacity: 0;
-    transition: opacity 0.3s ease-in;
-}
-body.loaded {
-    visibility: visible;
-    opacity: 1;
-}
+        /* ✅ Hide page until fully styled */
+        body {
+            min-height: 100vh;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease-in;
+        }
 
-/* Sidebar */
-.sidebar {
-    position: fixed;
-    top: 56px; /* height of navbar */
-    left: -280px; /* hidden by default */
-    width: 280px;
-    height: 100%;
-    background: #fff;
-    border-right: 1px solid #ddd;
-    transition: left 0.3s ease;
-    z-index: 2000; /* ✅ above main content */
-    padding: 1rem;
-}
-body.sidebar-visible .sidebar {
-    left: 0;
-}
+        body.loaded {
+            visibility: visible;
+            opacity: 1;
+        }
 
-/* Main content */
-.main-content {
-    margin-left: 0;
-    padding-top: 80px; /* space for fixed navbar */
-    transition: margin-left 0.3s ease;
-}
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 56px;
+            /* height of navbar */
+            left: -280px;
+            /* hidden by default */
+            width: 280px;
+            height: 100%;
+            background: #fff;
+            border-right: 1px solid #ddd;
+            transition: left 0.3s ease;
+            z-index: 2000;
+            /* ✅ above main content */
+            padding: 1rem;
+        }
 
-/* Push content on desktop */
-@media (min-width: 992px) {
-    body.sidebar-visible .main-content {
-        margin-left: 280px;
-    }
-}
+        body.sidebar-visible .sidebar {
+            left: 0;
+        }
 
-/* Sidebar links */
-.sidebar .nav-link {
-    font-weight: 600;
-    color: #000 !important;
-    transition: background-color 0.2s, color 0.2s;
-    cursor: pointer;
-    border-radius: 8px;
-}
-.sidebar .nav-link:hover,
-.sidebar .nav-link.active {
-    background-color: #0d6efd;
-    color: #fff !important;
-}
+        /* Main content */
+        .main-content {
+            margin-left: 0;
+            padding-top: 80px;
+            /* space for fixed navbar */
+            transition: margin-left 0.3s ease;
+        }
 
+        /* Push content on desktop */
+        @media (min-width: 992px) {
+            body.sidebar-visible .main-content {
+                margin-left: 280px;
+            }
+        }
 
-/* Hide sections by default */
-#systemSettingsSection,
-#systemLogsSection {
-    display: none;
-}
+        /* Sidebar links */
+        .sidebar .nav-link {
+            font-weight: 600;
+            color: #000 !important;
+            transition: background-color 0.2s, color 0.2s;
+            cursor: pointer;
+            border-radius: 8px;
+        }
 
-/* Remove DataTables sorting arrows */
-table.dataTable thead th::after {
-    content: "" !important;
-    display: none !important;
-}
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background-color: #0d6efd;
+            color: #fff !important;
+        }
 
-/* Dashboard Cards: stack nicely on mobile */
-@media (max-width: 575.98px) {
-    .row .col-6.col-lg-3 {
-        flex: 0 0 100%;
-        max-width: 100%;
-    }
-}
+        /* Hide sections by default */
+        #systemSettingsSection,
+        #systemLogsSection {
+            display: none;
+        }
 
-/* Sidebar overlay on mobile */
-@media (max-width: 991.98px) {
-    .sidebar {
-        left: -250px;
-        width: 250px;
-        top: 56px;
-        height: calc(100% - 56px);
-        box-shadow: 0 0 10px rgba(0,0,0,0.3);
-    }
-    body.sidebar-visible .sidebar {
-        left: 0;
-    }
-    .main-content {
-        margin-left: 0 !important;
-        padding: 70px 15px 20px 15px;
-    }
-}
+        /* Remove DataTables sorting arrows */
+        table.dataTable thead th::after {
+            content: "" !important;
+            display: none !important;
+        }
 
-/* Tables: wrap long buttons */
-.table td .btn {
-    white-space: nowrap;
-    margin-bottom: 5px;
-}
+        /* Dashboard Cards: stack nicely on mobile */
+        @media (max-width: 575.98px) {
+            .row .col-6.col-lg-3 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+        }
 
-/* Modals and forms on mobile */
-@media (max-width: 576px) {
-    .modal-body {
-        padding: 1rem;
-    }
-    .modal-footer {
-        flex-direction: column;
-    }
-    .modal-footer .btn {
-        width: 100%;
-        margin-bottom: 5px;
-    }
-    .d-grid button {
-        width: 100%;
-    }
-}
-</style>
+        /* Sidebar overlay on mobile */
+        @media (max-width: 991.98px) {
+            .sidebar {
+                left: -250px;
+                width: 250px;
+                top: 56px;
+                height: calc(100% - 56px);
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            }
 
+            body.sidebar-visible .sidebar {
+                left: 0;
+            }
 
+            .main-content {
+                margin-left: 0 !important;
+                padding: 70px 15px 20px 15px;
+            }
+        }
+
+        /* Tables: wrap long buttons */
+        .table td .btn {
+            white-space: nowrap;
+            margin-bottom: 5px;
+        }
+
+        /* Modals and forms on mobile */
+        @media (max-width: 576px) {
+            .modal-body {
+                padding: 1rem;
+            }
+
+            .modal-footer {
+                flex-direction: column;
+            }
+
+            .modal-footer .btn {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+
+            .d-grid button {
+                width: 100%;
+            }
+        }
+
+        /* ✅ Mobile-friendly layout for tabs + Add Account button */
+        @media (max-width: 767.98px) {
+            #userManagementSection .d-flex {
+                flex-direction: column;
+                align-items: stretch !important;
+            }
+
+            #userManagementSection .nav-tabs {
+                margin-bottom: 10px;
+                flex-wrap: wrap;
+            }
+
+            #userManagementSection .btn {
+                width: 100%;
+            }
+        }
+    </style>
 
 </head>
 
@@ -174,11 +211,11 @@ table.dataTable thead th::after {
             <button class="btn btn-outline-secondary me-2" id="sidebarToggle">
                 <i class="bi bi-list"></i>
             </button>
-
-            <!-- Brand -->
-            <a class="navbar-brand fw-bold d-flex align-items-center" href="#">
-                IPAMS
-            </a>
+            <div class="d-none d-sm-flex flex-column dashboard-title" style="min-width: 0;">
+                <span style="font-size: clamp(0.9rem, 2vw, 1.25rem);" class="fw-bold mb-0">
+                    <?php echo htmlspecialchars($appName); ?>
+                </span>
+            </div>
 
             <!-- Spacer -->
             <div class="flex-grow-1"></div>
@@ -279,7 +316,8 @@ table.dataTable thead th::after {
                 </h3>
 
                 <!-- Tabs + Add Button -->
-                <div class="d-flex justify-content-between align-items-center mb-3">
+                <!-- Tabs + Add Button -->
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
                     <!-- Tabs -->
                     <ul class="nav nav-tabs" id="userTabs" role="tablist">
                         <li class="nav-item" role="presentation">
@@ -293,11 +331,12 @@ table.dataTable thead th::after {
                     </ul>
 
                     <!-- Add User Button -->
-                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addUserModal"
+                    <button class="btn btn-success mt-2 mt-md-0" data-bs-toggle="modal" data-bs-target="#addUserModal"
                         title="Add Account">
                         <i class="bi bi-person-plus me-2"></i> Add Account
                     </button>
                 </div>
+
 
                 <!-- Single Card containing both tables -->
                 <div class="card shadow-sm">
@@ -330,14 +369,12 @@ table.dataTable thead th::after {
                                             <td>{$row['fullname']}</td>
                                             <td>{$row['email']}</td>
                                             <td>
-                                                <button class='btn btn-sm btn-primary' title='Edit'><i class='bi bi-pencil'></i></button>
-                                                <button class='btn btn-sm btn-danger' title='Delete'><i class='bi bi-trash'></i></button>
-                                                <button class='btn btn-sm btn-warning reset-btn' 
-                                                    title='Reset Password' 
-                                                    data-user-name='{$row['fullname']}'>
-                                                    <i class='bi bi-key'></i>
-                                                </button>
+                                                <button class='btn btn-sm btn-primary edit-btn' title='Edit'><i class='bi bi-pencil'></i></button>
+                                                <button class='btn btn-sm btn-danger delete-btn' title='Delete'><i class='bi bi-trash'></i></button>
+                                                <button class='btn btn-sm btn-warning reset-btn' title='Reset Password' data-user-name='{$row['fullname']}'><i class='bi bi-key'></i></button>
                                             </td>
+
+
                                         </tr>";
                                                 }
                                             } else {
@@ -375,13 +412,9 @@ table.dataTable thead th::after {
                                             <td>{$row['fullname']}</td>
                                             <td>{$row['email']}</td>
                                             <td>
-                                                <button class='btn btn-sm btn-primary' title='Edit'><i class='bi bi-pencil'></i></button>
-                                                <button class='btn btn-sm btn-danger' title='Delete'><i class='bi bi-trash'></i></button>
-                                                <button class='btn btn-sm btn-warning reset-btn' 
-                                                    title='Reset Password' 
-                                                    data-user-name='{$row['fullname']}'>
-                                                    <i class='bi bi-key'></i>
-                                                </button>
+                                                <button class='btn btn-sm btn-primary edit-btn' title='Edit'><i class='bi bi-pencil'></i></button>
+                                                <button class='btn btn-sm btn-danger delete-btn' title='Delete'><i class='bi bi-trash'></i></button>
+                                                <button class='btn btn-sm btn-warning reset-btn' title='Reset Password' data-user-name='{$row['fullname']}'><i class='bi bi-key'></i></button>
                                             </td>
                                         </tr>";
                                                 }
@@ -397,6 +430,56 @@ table.dataTable thead th::after {
                     </div>
                 </div>
             </div>
+
+
+            <!-- Edit User Modal -->
+            <div class="modal fade" id="editUserModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Edit User</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="editUserForm">
+                                <input type="hidden" id="editUserId">
+                                <div class="mb-3">
+                                    <label for="editFullName" class="form-label">Full Name</label>
+                                    <input type="text" class="form-control" id="editFullName" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editEmail" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="editEmail" required>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary" id="saveEditBtn">Save Changes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delete Confirmation Modal -->
+            <div class="modal fade" id="deleteUserModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-danger">Confirm Delete</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Are you sure you want to delete <strong id="deleteUserName"></strong>?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
 
 
             <!-- Reset Password Confirmation Modal -->
@@ -481,7 +564,8 @@ table.dataTable thead th::after {
                             <div class="mb-3">
                                 <label class="form-label fw-bold">System Name</label>
                                 <input type="text" class="form-control" name="system_name"
-                                    placeholder="Enter system name" required>
+                                    placeholder="Enter system name" value="<?php echo htmlspecialchars($appName); ?>"
+                                    required>
                             </div>
 
                             <!-- Change Logo -->
@@ -601,45 +685,6 @@ table.dataTable thead th::after {
                 </div>
             </div>
 
-            <!-- System Logs Section -->
-            <div id="systemLogsSection" class="mt-4">
-                <!-- Page Title -->
-                <div class="mb-3">
-                    <h3 class="fw-bold text-dark">
-                        <i class="bi bi-journal-text me-2"></i> System Logs
-                    </h3>
-                </div>
-
-                <!-- Date Filters -->
-                <form method="get" class="row g-3 align-items-end mb-3">
-                    <div class="col-auto">
-                        <label for="dateFrom" class="form-label fw-semibold">Date From</label>
-                        <input type="date" class="form-control" id="dateFrom" name="dateFrom">
-                    </div>
-                    <div class="col-auto">
-                        <label for="dateTo" class="form-label fw-semibold">Date To</label>
-                        <input type="date" class="form-control" id="dateTo" name="dateTo">
-                    </div>
-
-                </form>
-
-                <!-- Logs Table -->
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table id="logsTable" class="table table-striped table-hover align-middle">
-                                <thead>
-                                    <tr>
-                                        <th>IP</th>
-                                        <th>User ID</th>
-                                        <th>Type</th>
-                                        <th>Content</th>
-                                        <th>Date</th>
-                                        <th>Time</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                        </div>
     </main>
 
     <!-- JS -->
@@ -652,126 +697,177 @@ table.dataTable thead th::after {
     <script src="../javascript/superadmin.js"></script>
 
     <script>
-    $(document).ready(function () {
-        // ✅ Show page only after everything is ready
-        $("body").addClass("loaded");
+        $(document).ready(function () {
+            // ✅ Show page once fully loaded
+            $("body").addClass("loaded");
 
-        $('#usersTable, #adminsTable, #applicantsTable, #logsTable').DataTable({
-            paging: true,
-            searching: true,
-            lengthChange: true,
-            pageLength: 10,
-            ordering: false
-        });
-
-        <?php if (isset($_SESSION['pass_status'])):
-            $status = $_SESSION['pass_status']['status'];
-            $message = $_SESSION['pass_status']['message'];
-            unset($_SESSION['pass_status']);
-            ?>
-            Swal.fire({
-                icon: '<?php echo $status; ?>',
-                title: '<?php echo $status === "success" ? "Success!" : "Error!"; ?>',
-                text: '<?php echo $message; ?>',
-                confirmButtonColor: '#0d6efd'
+            // ----- DATATABLES -----
+            $('#usersTable, #adminsTable, #applicantsTable, #logsTable').DataTable({
+                paging: true,
+                searching: true,
+                lengthChange: true,
+                pageLength: 10,
+                ordering: false
             });
-        <?php endif; ?>
 
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
-        tooltipTriggerList.map(function (el) {
-            return new bootstrap.Tooltip(el);
-        });
+            // ----- SWEETALERT PASSWORD STATUS -----
+            <?php if (isset($_SESSION['pass_status'])):
+                $status = $_SESSION['pass_status']['status'];
+                $message = $_SESSION['pass_status']['message'];
+                unset($_SESSION['pass_status']);
+                ?>
+                Swal.fire({
+                    icon: '<?php echo $status; ?>',
+                    title: '<?php echo $status === "success" ? "Success!" : "Error!"; ?>',
+                    text: '<?php echo $message; ?>',
+                    confirmButtonColor: '#0d6efd'
+                });
+            <?php endif; ?>
 
-        let selectedUserName = '';
-        let selectedUserId = '';
+            // ----- BOOTSTRAP TOOLTIPS -----
+            $('[title]').each(function () { new bootstrap.Tooltip(this); });
 
-        $('#resetPasswordModal').on('show.bs.modal', function () {
-            $('#resetLoading').hide();
-            $('#confirmResetBtn').prop('disabled', false);
-            $('#resetPasswordModal .btn-secondary').prop('disabled', false);
-        });
+            let selectedUserId = '';
+            let selectedUserName = '';
 
-        $('.reset-btn').on('click', function () {
-            selectedUserName = $(this).data('user-name');
-            selectedUserId = $(this).closest('tr').find('td:first').text();
-            $('#resetUserName').text(selectedUserName);
-            $('#resetPasswordModal').modal('show');
-        });
-
-        $('#confirmResetBtn').on('click', function () {
-            if (!selectedUserId) return;
-            $('#resetLoading').removeClass('d-none');
-            $('#confirmResetBtn').prop('disabled', true);
-            $('#resetPasswordModal .btn-secondary').prop('disabled', true);
-            $.ajax({
-                url: 'reset_password.php',
-                method: 'POST',
-                data: { user_id: selectedUserId },
-                success: function () {
-                    $('#resetLoading').addClass('d-none');
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Password Reset!',
-                        text: `Password for ${selectedUserName} has been reset to default (password123).`,
-                        confirmButtonColor: '#0d6efd'
-                    });
-                    $('#resetPasswordModal').modal('hide');
-                },
-                error: function () {
-                    $('#resetLoading').addClass('d-none');
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: 'Failed to reset password.',
-                        confirmButtonColor: '#d33'
-                    });
-                },
-                complete: function () {
-                    $('#confirmResetBtn').prop('disabled', false);
-                    $('#resetPasswordModal .btn-secondary').prop('disabled', false);
-                }
+            // ----- RESET PASSWORD -----
+            $('#resetPasswordModal').on('show.bs.modal', function () {
+                $('#resetLoading').hide();
+                $('#confirmResetBtn, #resetPasswordModal .btn-secondary').prop('disabled', false);
             });
-        });
 
-        $('#sidebarToggle').on('click', function () {
-            $('body').toggleClass('sidebar-visible');
-            localStorage.setItem('sidebarState', $('body').hasClass('sidebar-visible') ? 'open' : 'closed');
-        });
+            $('.reset-btn').click(function () {
+                selectedUserName = $(this).data('user-name');
+                selectedUserId = $(this).closest('tr').find('td:first').text();
+                $('#resetUserName').text(selectedUserName);
+                $('#resetPasswordModal').modal('show');
+            });
 
-        if (localStorage.getItem('sidebarState') === 'open') {
-            $('body').addClass('sidebar-visible');
-        }
+            $('#confirmResetBtn').click(function () {
+                if (!selectedUserId) return;
 
-        $(document).on("click", function (e) {
-            if ($(window).width() < 992) {
-                if (!$(".sidebar, #sidebarToggle").is(e.target) &&
-                    $(".sidebar, #sidebarToggle").has(e.target).length === 0) {
-                    $("body").removeClass("sidebar-visible");
+                $('#resetLoading').removeClass('d-none');
+                $('#confirmResetBtn, #resetPasswordModal .btn-secondary').prop('disabled', true);
+
+                $.ajax({
+                    url: 'reset_password.php',
+                    method: 'POST',
+                    data: { user_id: selectedUserId },
+                    success: function () {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Password Reset!',
+                            text: `Password for ${selectedUserName} has been reset to default (password123).`,
+                            confirmButtonColor: '#0d6efd'
+                        });
+                        $('#resetPasswordModal').modal('hide');
+                    },
+                    error: function () {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'Failed to reset password.',
+                            confirmButtonColor: '#d33'
+                        });
+                    },
+                    complete: function () {
+                        $('#resetLoading').addClass('d-none');
+                        $('#confirmResetBtn, #resetPasswordModal .btn-secondary').prop('disabled', false);
+                    }
+                });
+            });
+
+            // ----- SIDEBAR TOGGLE -----
+            $('#sidebarToggle').click(function () {
+                $('body').toggleClass('sidebar-visible');
+                localStorage.setItem('sidebarState', $('body').hasClass('sidebar-visible') ? 'open' : 'closed');
+            });
+
+            if (localStorage.getItem('sidebarState') === 'open') {
+                $('body').addClass('sidebar-visible');
+            }
+
+            $(document).click(function (e) {
+                if ($(window).width() < 992 && !$(e.target).closest('.sidebar, #sidebarToggle').length) {
+                    $('body').removeClass('sidebar-visible');
                     localStorage.setItem('sidebarState', 'closed');
                 }
-            }
+            });
+
+            // ----- SHOW LAST SECTION -----
+            showSection(localStorage.getItem("lastSection") || "#dashboardSection");
+
+            // ----- EDIT USER -----
+            $(document).on('click', '.edit-btn', function () {
+                let $row = $(this).closest('tr');
+                selectedUserId = $row.find('td:first').text();
+                selectedUserName = $row.find('td:eq(1)').text();
+                let email = $row.find('td:eq(2)').text();
+
+                $('#editUserId').val(selectedUserId);
+                $('#editFullName').val(selectedUserName);
+                $('#editEmail').val(email);
+                $('#editUserModal').modal('show');
+            });
+
+            $('#saveEditBtn').click(function () {
+                $.post('update_user.php', {
+                    id: $('#editUserId').val(),
+                    fullname: $('#editFullName').val(),
+                    email: $('#editEmail').val()
+                }, function (res) {
+                    if (res.success) {
+                        let $row = $(`#adminsTable tr td:first:contains(${res.id}), #applicantsTable tr td:first:contains(${res.id})`).closest('tr');
+                        $row.find('td:eq(1)').text(res.fullname);
+                        $row.find('td:eq(2)').text(res.email);
+                        Swal.fire('Updated!', 'User info updated successfully.', 'success');
+                        $('#editUserModal').modal('hide');
+                    } else {
+                        Swal.fire('Error!', res.message || 'Update failed.', 'error');
+                    }
+                }, 'json');
+            });
+
+            // ----- DELETE USER -----
+            $(document).on('click', '.delete-btn', function () {
+                let $row = $(this).closest('tr');
+                selectedUserId = $row.find('td:first').text();
+                selectedUserName = $row.find('td:eq(1)').text();
+                $('#deleteUserName').text(selectedUserName);
+                $('#deleteUserModal').modal('show');
+            });
+
+            $('#confirmDeleteBtn').click(function () {
+                $.post('delete_user.php', { id: selectedUserId }, function (res) {
+                    if (res.success) {
+                        $(`#adminsTable tr td:first:contains(${selectedUserId}), #applicantsTable tr td:first:contains(${selectedUserId})`).closest('tr').remove();
+                        Swal.fire('Deleted!', 'User has been deleted.', 'success');
+                        $('#deleteUserModal').modal('hide');
+                    } else {
+                        Swal.fire('Error!', res.message || 'Deletion failed.', 'error');
+                    }
+                }, 'json');
+            });
         });
 
-        let lastSection = localStorage.getItem("lastSection") || "#dashboardSection";
-        showSection(lastSection);
-    });
+        // ----- FILTER USER TABLE -----
+        function filterUserTable(role) {
+            $("#usersTable tbody tr").each(function () {
+                $(this).toggle(role === "All" || $(this).data("role") === role);
+            });
+        }
 
-    function filterUserTable(role) {
-        $("#usersTable tbody tr").each(function () {
-            var userRole = $(this).data("role");
-            $(this).toggle(role === "All" || userRole === role);
-        });
-    }
+        // ----- SHOW SECTION -----
+        function showSection(sectionId) {
+            $('#dashboardSection, #userManagementSection, #systemSettingsSection, #systemLogsSection').hide();
+            $(sectionId).show();
+            $('.sidebar .nav-link, .offcanvas-body .nav-link').removeClass('active');
+            $(`.sidebar .nav-link[onclick="showSection('${sectionId}')"],
+            .offcanvas-body .nav-link[onclick="showSection('${sectionId}')"]`).addClass('active');
+            localStorage.setItem("lastSection", sectionId);
+        }
+    </script>
 
-    function showSection(sectionId) {
-        $('#dashboardSection, #userManagementSection, #systemSettingsSection, #systemLogsSection').hide();
-        $(sectionId).show();
-        $('.sidebar .nav-link, .offcanvas-body .nav-link').removeClass('active');
-        $(`.sidebar .nav-link[onclick="showSection('${sectionId}')"],
-        .offcanvas-body .nav-link[onclick="showSection('${sectionId}')"]`).addClass('active');
-        localStorage.setItem("lastSection", sectionId);
-    }
-</script>
 
 </body>
 

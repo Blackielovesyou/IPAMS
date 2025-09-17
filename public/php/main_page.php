@@ -1,32 +1,30 @@
 <?php
 session_start();
-include("db.php"); // include your DB connection
+include("db.php"); // Include your DB connection
 
 // Prevent caching
 header("Cache-Control: no-cache, no-store, must-revalidate");
 header("Pragma: no-cache");
 header("Expires: 0");
 
-// If not logged in → block (go back, no redirect URL shown)
+// Check if logged in
 if (!isset($_SESSION['id']) || !isset($_SESSION['role'])) {
-  echo "<script>window.history.back();</script>";
-  exit;
+    echo "<script>window.history.back();</script>";
+    exit;
 }
 
 // Only Applicant can access
 if ($_SESSION['role'] !== 'Applicant') {
-  // Stay on current page instead of redirecting
-  echo "<script>window.history.back();</script>";
-  exit;
+    echo "<script>window.history.back();</script>";
+    exit;
 }
 
-// ✅ If reached here → Applicant is allowed
+// ✅ Applicant is allowed
 $userRole = $_SESSION['role'];
-
-// Fetch logged-in user's first name
-$userFirstName = "User"; // default fallback
 $userId = $_SESSION['id'];
 
+// Fetch logged-in user's first name
+$userFirstName = "User"; // fallback
 $sqlUser = "SELECT first_name FROM users WHERE id = ?";
 $stmtUser = $conn->prepare($sqlUser);
 $stmtUser->bind_param("i", $userId);
@@ -34,7 +32,17 @@ $stmtUser->execute();
 $resultUser = $stmtUser->get_result();
 
 if ($rowUser = $resultUser->fetch_assoc()) {
-  $userFirstName = $rowUser['first_name'];
+    $userFirstName = $rowUser['first_name'];
+}
+
+// Fetch app name
+$appName = "MyApp"; // fallback
+$sqlApp = "SELECT appname FROM app_info ORDER BY id LIMIT 1";
+$resultApp = $conn->query($sqlApp);
+
+if ($resultApp && $resultApp->num_rows > 0) {
+    $rowApp = $resultApp->fetch_assoc();
+    $appName = $rowApp['appname'];
 }
 ?>
 
@@ -55,11 +63,11 @@ if ($rowUser = $resultUser->fetch_assoc()) {
   <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom px-3">
     <div class="container-fluid">
 
-      <!-- Left Section -->
-      <div class="d-flex align-items-center">
-        <div class="fw-bold">IPAMS</div>
+      <div class="d-none d-sm-flex flex-column dashboard-title" style="min-width: 0;">
+        <span style="font-size: clamp(0.9rem, 2vw, 1.25rem);" class="fw-bold mb-0">
+          <?php echo htmlspecialchars($appName); ?>
+        </span>
       </div>
-
       <!-- Right Section -->
       <div class="d-flex align-items-center ms-auto">
         <i class="bi bi-bell fs-4 me-3"></i>

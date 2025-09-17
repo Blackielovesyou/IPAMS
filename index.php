@@ -1,3 +1,15 @@
+<?php
+include "public/php/db.php"; // correct path to db.php
+
+// Fetch all contact info
+$sql = "SELECT * FROM app_info WHERE category IN ('Office', 'Emergency')";
+$result = $conn->query($sql);
+
+$contacts = [];
+while ($row = $result->fetch_assoc()) {
+    $contacts[$row['category']] = $row;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -120,59 +132,78 @@
     </section>
 
     <!-- Contact -->
+    <!-- Contact Section -->
     <section class="py-5 bg-light">
         <div class="container">
-            <!-- Section Title -->
             <h2 class="text-center fw-bold mb-5 text-dark">Contact Us</h2>
-
             <div class="row g-4 justify-content-center">
-                <!-- Office Information Card -->
-                <div class="col-md-6 col-lg-5">
-                    <div class="card shadow-lg border-0 h-100 rounded-3">
-                        <div class="card-body text-center p-4">
-                            <div class="mb-3">
-                                <i class="bi bi-building fs-1 text-primary"></i>
-                            </div>
-                            <h5 class="fw-bold mb-3 text-primary">Office Information</h5>
-                            <p class="mb-2 text-muted d-flex align-items-center justify-content-center">
-                                <i class="bi bi-geo-alt-fill me-2 text-primary"></i>
-                                123 City Hall Drive, Springfield, ST 12345
-                            </p>
-                            <p class="mb-2 d-flex align-items-center justify-content-center">
-                                <i class="bi bi-telephone-fill me-2 text-primary"></i>
-                                (555) 123-4567
-                            </p>
-                            <p class="mb-2 d-flex align-items-center justify-content-center">
-                                <i class="bi bi-envelope-fill me-2 text-primary"></i>
-                                building@springfield.gov
-                            </p>
-                            <p class="mb-0 d-flex align-items-center justify-content-center">
-                                <i class="bi bi-clock-fill me-2 text-primary"></i>
-                                Mon-Fri: 8:00 AM - 5:00 PM
-                            </p>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Emergency Contact Card -->
-                <div class="col-md-6 col-lg-5">
-                    <div class="card shadow-lg border-0 h-100 rounded-3">
-                        <div class="card-body text-center p-4">
-                            <div class="mb-3">
-                                <i class="bi bi-exclamation-triangle-fill fs-1 text-danger"></i>
+                <!-- Office Information -->
+                <?php if (isset($contacts['Office'])):
+                    $office = $contacts['Office']; ?>
+                    <div class="col-md-6 col-lg-5">
+                        <div class="card shadow-lg border-0 h-100 rounded-3">
+                            <div class="card-body text-center p-4">
+                                <div class="mb-3">
+                                    <i class="bi bi-building fs-1 text-primary"></i>
+                                </div>
+                                <h5 class="fw-bold mb-3 text-primary"><?= htmlspecialchars($office['title']) ?></h5>
+                                <?php if ($office['address']): ?>
+                                    <p class="mb-2 text-muted d-flex align-items-center justify-content-center">
+                                        <i class="bi bi-geo-alt-fill me-2 text-primary"></i>
+                                        <?= htmlspecialchars($office['address']) ?>
+                                    </p>
+                                <?php endif; ?>
+                                <?php if ($office['phone']): ?>
+                                    <p class="mb-2 d-flex align-items-center justify-content-center">
+                                        <i class="bi bi-telephone-fill me-2 text-primary"></i>
+                                        <?= htmlspecialchars($office['phone']) ?>
+                                    </p>
+                                <?php endif; ?>
+                                <?php if ($office['email']): ?>
+                                    <p class="mb-2 d-flex align-items-center justify-content-center">
+                                        <i class="bi bi-envelope-fill me-2 text-primary"></i>
+                                        <?= htmlspecialchars($office['email']) ?>
+                                    </p>
+                                <?php endif; ?>
+                                <?php if ($office['hours']): ?>
+                                    <p class="mb-0 d-flex align-items-center justify-content-center">
+                                        <i class="bi bi-clock-fill me-2 text-primary"></i>
+                                        <?= htmlspecialchars($office['hours']) ?>
+                                    </p>
+                                <?php endif; ?>
                             </div>
-                            <h5 class="fw-bold mb-3 text-danger">Emergency Contact</h5>
-                            <p class="mb-2 text-muted d-flex align-items-center justify-content-center">
-                                <i class="bi bi-info-circle-fill me-2 text-danger"></i>
-                                For urgent building safety issues outside business hours:
-                            </p>
-                            <p class="mt-2 d-flex align-items-center justify-content-center text-dark">
-                                <i class="bi bi-telephone-inbound-fill me-2 text-danger"></i>
-                                (555) 911-SAFE
-                            </p>
                         </div>
                     </div>
-                </div>
+                <?php endif; ?>
+
+                <!-- Emergency Contact -->
+                <?php if (isset($contacts['Emergency'])):
+                    $emergency = $contacts['Emergency']; ?>
+                    <div class="col-md-6 col-lg-5">
+                        <div class="card shadow-lg border-0 h-100 rounded-3">
+                            <div class="card-body text-center p-4">
+                                <div class="mb-3">
+                                    <i class="bi bi-exclamation-triangle-fill fs-1 text-danger"></i>
+                                </div>
+                                <h5 class="fw-bold mb-3 text-danger"><?= htmlspecialchars($emergency['title']) ?></h5>
+                                <?php if ($emergency['notes']): ?>
+                                    <p class="mb-2 text-muted d-flex align-items-center justify-content-center">
+                                        <i class="bi bi-info-circle-fill me-2 text-danger"></i>
+                                        <?= htmlspecialchars($emergency['notes']) ?>
+                                    </p>
+                                <?php endif; ?>
+                                <?php if ($emergency['phone']): ?>
+                                    <p class="mt-2 d-flex align-items-center justify-content-center text-dark">
+                                        <i class="bi bi-telephone-inbound-fill me-2 text-danger"></i>
+                                        <?= htmlspecialchars($emergency['phone']) ?>
+                                    </p>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
             </div>
         </div>
     </section>
