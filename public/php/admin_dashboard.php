@@ -50,19 +50,104 @@ if ($result) {
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-    <style>
-        @media (max-width: 576px) {
-            .navbar .dashboard-title {
-                display: none;
-            }
-        }
 
+    <style>
+        /* ✅ Hide page until fully styled */
         body {
+            min-height: 100vh;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease-in;
             overflow-x: hidden;
             overflow-y: auto;
         }
 
-        /* Table column widths */
+        body.loaded {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* ✅ Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 56px;
+            /* navbar height */
+            left: -280px;
+            /* hidden by default */
+            width: 280px;
+            height: 100%;
+            background: #fff;
+            border-right: 1px solid #ddd;
+            transition: left 0.3s ease;
+            z-index: 2000;
+            /* above main content */
+            overflow-y: auto;
+            padding: 1rem 0;
+        }
+
+        body.sidebar-visible .sidebar {
+            left: 0;
+        }
+
+        /* ✅ Sidebar links */
+        .sidebar .nav-link {
+            font-weight: 600;
+            color: #000 !important;
+            padding: 12px 20px;
+            display: block;
+            border-radius: 8px;
+            transition: background-color 0.2s, color 0.2s;
+            cursor: pointer;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background-color: #0d6efd;
+            color: #fff !important;
+        }
+
+        /* ✅ Main content */
+        .main-content {
+            margin-left: 0;
+            transition: margin-left 0.3s ease;
+            padding: 70px 15px 20px 15px;
+            /* space for navbar */
+        }
+
+        @media (min-width: 992px) {
+            body.sidebar-visible .main-content {
+                margin-left: 280px;
+            }
+        }
+
+        /* ✅ Responsive Sidebar for Mobile */
+        @media (max-width: 991.98px) {
+            .sidebar {
+                left: -250px;
+                width: 250px;
+                height: calc(100% - 56px);
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            }
+
+            body.sidebar-visible .sidebar {
+                left: 0;
+            }
+
+            .main-content {
+                margin-left: 0 !important;
+                padding: 70px 15px 20px 15px;
+            }
+        }
+
+        /* ✅ Dashboard cards stack on mobile */
+        @media (max-width: 575.98px) {
+            .row .col-6.col-lg-3 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+        }
+
+        /* ✅ Table column widths */
         .table th.id {
             width: 15%;
         }
@@ -92,47 +177,102 @@ if ($result) {
         }
 
         .table th.action {
-            width: 10%;
+            width: 5%;
+        }
+
+        /* ✅ Remove DataTables sorting arrows */
+        table.dataTable thead th::after {
+            content: "" !important;
+            display: none !important;
+        }
+
+        /* ✅ Table buttons wrap on small screens */
+        .table td .btn {
+            white-space: nowrap;
+            margin-bottom: 5px;
+        }
+
+        /* ✅ Modals & Forms mobile fix */
+        @media (max-width: 576px) {
+            .modal-body {
+                padding: 1rem;
+            }
+
+            .modal-footer {
+                flex-direction: column;
+            }
+
+            .modal-footer .btn {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+
+            .d-grid button {
+                width: 100%;
+            }
+        }
+
+        /* ✅ Navbar dashboard title hidden on XS */
+        @media (max-width: 576px) {
+            .navbar .dashboard-title {
+                display: none;
+            }
         }
     </style>
+
+
 </head>
 
 <body class="bg-light">
 
-    <div class="container-fluid p-0">
-        <!-- Navbar -->
-        <nav class="navbar navbar-light bg-light shadow-sm py-2">
-            <div class="container-fluid d-flex justify-content-between align-items-center" style="flex-wrap: nowrap;">
+    <!-- Navbar -->
+    <nav class="navbar navbar-light bg-white border-bottom shadow-sm fixed-top">
+        <div class="container-fluid d-flex justify-content-between align-items-center" style="flex-wrap: nowrap;">
 
-                <!-- Left: House Icon + Dashboard Title (hidden on mobile) -->
-                <div class="d-flex align-items-center" style="min-width: 0;">
-                    <img src="../images/house.png" alt="Building Icon" class="me-2"
-                        style="width:50px; height:50px; flex-shrink: 0;">
-                    <div class="d-none d-sm-flex flex-column dashboard-title" style="min-width: 0;">
-                        <span style="font-size: clamp(0.9rem, 2vw, 1.25rem);" class="fw-bold mb-0">OBO Admin
-                            Dashboard</span>
-                        <small style="font-size: clamp(0.7rem, 1.5vw, 0.9rem);" class="text-muted">Office of the
-                            Building Official - Staff Portal</small>
-                    </div>
+            <!-- ✅ Left: Burger Button + Title -->
+            <div class="d-flex align-items-center" style="min-width: 0;">
+                <button class="btn btn-outline-secondary me-2" id="sidebarToggle">
+                    <i class="bi bi-list"></i>
+                </button>
+                <div class="d-none d-sm-flex flex-column dashboard-title" style="min-width: 0;">
+                    <span style="font-size: clamp(0.9rem, 2vw, 1.25rem);" class="fw-bold mb-0">IPAMS</span>
                 </div>
-
-                <!-- Right: Role + Dropdown Arrow -->
-                <div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center gap-2">
-                    <div class="dropdown">
-                        <a class="fw-semibold text-decoration-none text-dark dropdown-toggle" href="#" role="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            <?php echo htmlspecialchars($userRole); ?>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#">Settings</a></li>
-                            <li><a class="dropdown-item" href="#" id="logoutBtn">Logout</a></li>
-                        </ul>
-                    </div>
-                </div>
-
             </div>
-        </nav>
 
+            <!-- ✅ Right: Role Dropdown -->
+            <div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center gap-2">
+                <div class="dropdown">
+                    <a class="fw-semibold text-decoration-none text-dark dropdown-toggle" href="#" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        <?php echo htmlspecialchars($userRole); ?>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#">Settings</a></li>
+                        <li><a class="dropdown-item" href="#" id="logoutBtn">Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ✅ Sidebar -->
+    <div class="sidebar bg-white text-dark p-3">
+        <ul class="nav flex-column">
+            <li class="nav-item"><a href="#" class="nav-link active" data-section="dashboard">Dashboard</a></li>
+            <li class="nav-item"><a href="#" class="nav-link" data-section="applications">Application Management</a>
+            </li>
+            <li class="nav-item"><a href="#" class="nav-link" data-section="permits">Permit Applications</a></li>
+            <li class="nav-item"><a href="#" class="nav-link" data-section="reports">Reports</a></li>
+            <li class="nav-item"><a href="#" class="nav-link" data-section="settings">Settings</a></li>
+        </ul>
+    </div>
+
+
+    <!-- ✅ Main Content -->
+    <div class="main-content">
+
+    <!-- ✅ Dashboard Section -->
+    <div id="dashboard" class="content-section">
         <!-- Stats Cards -->
         <div class="row text-center g-3 my-3 px-3">
             <div class="col-6 col-md-3">
@@ -246,7 +386,6 @@ if ($result) {
 
                                     <!-- Applicant Name Only -->
                                     <td><?php echo htmlspecialchars($app['full_name']); ?></td>
-
                                     <td><?php echo ucfirst(htmlspecialchars($app['permit_type'])); ?></td>
                                     <td><?php echo htmlspecialchars($app['contact_number']); ?></td>
                                     <td><?php echo htmlspecialchars($app['email']); ?></td>
@@ -267,50 +406,125 @@ if ($result) {
                 </table>
             </div>
         </div>
-
     </div>
 
-    <!-- Bootstrap JS -->
+    <!-- ✅ Application Management Section -->
+    <div id="applications" class="content-section d-none">
+        <h4>Application Management</h4>
+        <p>Content for Application Management goes here.</p>
+    </div>
+
+    <!-- ✅ Reports Section -->
+    <div id="reports" class="content-section d-none">
+        <h4>Reports</h4>
+        <p>Content for Reports goes here.</p>
+    </div>
+
+    <!-- ✅ Settings Section -->
+    <div id="settings" class="content-section d-none">
+        <h4>Settings</h4>
+        <p>Settings content goes here.</p>
+    </div>
+
+</div>
+
+
+
+    <!-- ✅ Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="../javascript/logout.js"></script>
 
+    <!-- ✅ Full Updated Script -->
     <script>
-        // Filter by permit type
-        document.getElementById("typeFilter").addEventListener("change", function () {
-            let filterValue = this.value.toLowerCase();
-            let rows = document.querySelectorAll("#applicationsTable tbody tr");
+document.addEventListener("DOMContentLoaded", function () {
+    // ✅ Fade in after styles are ready
+    document.body.classList.add("loaded");
 
-            rows.forEach(row => {
-                let typeCell = row.cells[2].textContent.toLowerCase();
-                if (filterValue === "all" || typeCell === filterValue) {
-                    row.style.display = "";
-                } else {
+    // ✅ Sidebar toggle
+    const sidebarToggle = document.getElementById("sidebarToggle");
+    const sidebar = document.querySelector(".sidebar");
+
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener("click", function () {
+            document.body.classList.toggle("sidebar-visible");
+            localStorage.setItem(
+                "sidebarState",
+                document.body.classList.contains("sidebar-visible") ? "open" : "closed"
+            );
+        });
+    }
+
+    // ✅ Restore sidebar state
+    if (localStorage.getItem("sidebarState") === "open") {
+        document.body.classList.add("sidebar-visible");
+    }
+
+    // ✅ Close sidebar on outside click (mobile only)
+    document.addEventListener("click", function (e) {
+        if (window.innerWidth < 992 && sidebar && sidebarToggle) {
+            if (
+                !sidebar.contains(e.target) &&
+                !sidebarToggle.contains(e.target)
+            ) {
+                document.body.classList.remove("sidebar-visible");
+                localStorage.setItem("sidebarState", "closed");
+            }
+        }
+    });
+
+    // ✅ Filters
+    const typeFilter = document.getElementById("typeFilter");
+    const statusFilter = document.getElementById("statusFilter");
+    const searchBtn = document.getElementById("searchBtn");
+    const searchInput = document.getElementById("searchInput");
+    const tableRows = document.querySelectorAll("#applicationsTable tbody tr");
+
+    // Helper to reset all rows visible
+    const resetRows = () => tableRows.forEach(row => (row.style.display = ""));
+
+    // Filter by type
+    if (typeFilter) {
+        typeFilter.addEventListener("change", function () {
+            resetRows();
+            const filterValue = this.value.toLowerCase();
+            tableRows.forEach(row => {
+                const typeCell = row.cells[2]?.textContent.toLowerCase() || "";
+                if (filterValue !== "all" && typeCell !== filterValue) {
                     row.style.display = "none";
                 }
             });
         });
+    }
 
-        // Search by numeric Application Number only
-        document.getElementById("searchBtn").addEventListener("click", function () {
-            let searchValue = document.getElementById("searchInput").value.trim().toLowerCase();
-            let rows = document.querySelectorAll("#applicationsTable tbody tr");
-
-            rows.forEach(row => {
-                let appNum = row.querySelector("td[data-id]").getAttribute("data-id").toLowerCase();
-                if (appNum.includes(searchValue) || searchValue === "") {
-                    row.style.display = "";
-                } else {
+    // Filter by status
+    if (statusFilter) {
+        statusFilter.addEventListener("change", function () {
+            resetRows();
+            const filterValue = this.value.toLowerCase();
+            tableRows.forEach(row => {
+                const statusCell = row.cells[6]?.textContent.toLowerCase() || "";
+                if (filterValue !== "all" && statusCell !== filterValue) {
                     row.style.display = "none";
                 }
             });
         });
+    }
 
-        // Instant search on typing
-        document.getElementById("searchInput").addEventListener("keyup", function () {
-            document.getElementById("searchBtn").click();
-        });
-    </script>
+    // Search by Application Number
+    if (searchBtn && searchInput) {
+        const doSearch = () => {
+            const searchValue = searchInput.value.trim().toLowerCase();
+            tableRows.forEach(row => {
+                const appNum = row.querySelector("td[data-id]")?.getAttribute("data-id")?.toLowerCase() || "";
+                row.style.display = (searchValue === "" || appNum.includes(searchValue)) ? "" : "none";
+            });
+        };
+        searchBtn.addEventListener("click", doSearch);
+        searchInput.addEventListener("keyup", doSearch);
+    }
+});
+</script>
 
 </body>
 

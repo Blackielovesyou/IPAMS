@@ -1,5 +1,6 @@
 <?php
 session_start();
+include("db.php"); // include your DB connection
 
 // Prevent caching
 header("Cache-Control: no-cache, no-store, must-revalidate");
@@ -8,19 +9,33 @@ header("Expires: 0");
 
 // If not logged in → block (go back, no redirect URL shown)
 if (!isset($_SESSION['id']) || !isset($_SESSION['role'])) {
-    echo "<script>window.history.back();</script>";
-    exit;
+  echo "<script>window.history.back();</script>";
+  exit;
 }
 
-// Only admin can access
+// Only Applicant can access
 if ($_SESSION['role'] !== 'Applicant') {
-    // Stay on current page instead of redirecting
-    echo "<script>window.history.back();</script>";
-    exit;
+  // Stay on current page instead of redirecting
+  echo "<script>window.history.back();</script>";
+  exit;
 }
 
-// ✅ If reached here → admin is allowed
+// ✅ If reached here → Applicant is allowed
 $userRole = $_SESSION['role'];
+
+// Fetch logged-in user's first name
+$userFirstName = "User"; // default fallback
+$userId = $_SESSION['id'];
+
+$sqlUser = "SELECT first_name FROM users WHERE id = ?";
+$stmtUser = $conn->prepare($sqlUser);
+$stmtUser->bind_param("i", $userId);
+$stmtUser->execute();
+$resultUser = $stmtUser->get_result();
+
+if ($rowUser = $resultUser->fetch_assoc()) {
+  $userFirstName = $rowUser['first_name'];
+}
 ?>
 
 <!DOCTYPE html>
@@ -42,11 +57,7 @@ $userRole = $_SESSION['role'];
 
       <!-- Left Section -->
       <div class="d-flex align-items-center">
-        <i class="bi bi-house-door-fill text-primary fs-2 me-2"></i>
-        <div>
-          <div class="fw-bold">City of [Municipality]</div>
-          <small class="text-primary">Office of the Building Official</small>
-        </div>
+        <div class="fw-bold">IPAMS</div>
       </div>
 
       <!-- Right Section -->
@@ -76,12 +87,12 @@ $userRole = $_SESSION['role'];
     </div>
   </nav>
 
-
   <!-- Welcome Section -->
   <div class="bg-primary text-white text-center py-4 mb-4 mt-3">
-    <h3 class="mb-1 text-">Welcome, Ian</h3>
+    <h3 class="mb-1">Welcome, <?php echo htmlspecialchars($userFirstName); ?></h3>
     <p class="mb-0">Piliin po ang permit na nais ninyong i-apply:</p>
   </div>
+
 
 
   <!-- Permit Options -->

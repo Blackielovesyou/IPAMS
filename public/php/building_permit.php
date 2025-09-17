@@ -125,7 +125,7 @@ if (!isset($_SESSION['id']) || !isset($_SESSION['role'])) {
                                 <input type="number" class="form-control" name="estimated_cost" min="1" required>
                             </div>
                         </div>
-                    </div>
+                    </div> 
                 </div>
             </div>
 

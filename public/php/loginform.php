@@ -29,20 +29,6 @@ if (isset($_SESSION['id']) && isset($_SESSION['role']) && !isset($_SESSION['succ
 </head>
 
 <body class="d-flex flex-column min-vh-100">
-
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm py-2">
-    <div class="container-fluid">
-      <a class="navbar-brand d-flex align-items-center" href="#">
-        <img src="../images/house.png" alt="Logo" width="45" height="45" class="me-2">
-        <div class="d-flex flex-column lh-1">
-          <span class="fw-bold">City of [Municipality]</span>
-          <small class="text-primary">Office of the Building Official</small>
-        </div>
-      </a>
-    </div>
-  </nav>
-
   <!-- Main -->
   <main class="flex-grow-1 d-flex align-items-center justify-content-center py-4">
 
