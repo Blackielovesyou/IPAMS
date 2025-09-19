@@ -414,7 +414,7 @@ if ($resultApp && $resultApp->num_rows > 0) {
                                             <td>
                                                 <button class='btn btn-sm btn-primary edit-btn' title='Edit'><i class='bi bi-pencil'></i></button>
                                                 <button class='btn btn-sm btn-danger delete-btn' title='Delete'><i class='bi bi-trash'></i></button>
-                                                <button class='btn btn-sm btn-warning reset-btn' title='Reset Password' data-user-name='{$row['fullname']}'><i class='bi bi-key'></i></button>
+                                                <button class='btn btn-sm btn-warning reset-btn' title='Reset Password' data-user-name='{$row['fullname']}' data-user-email='{$row['email']}'  data-user-id='{$row['id']}'><i class='bi bi-key'></i></button>
                                             </td>
                                         </tr>";
                                                 }
@@ -729,6 +729,7 @@ if ($resultApp && $resultApp->num_rows > 0) {
 
             let selectedUserId = '';
             let selectedUserName = '';
+            let selectedUserEmail = '';
 
             // ----- RESET PASSWORD -----
             $('#resetPasswordModal').on('show.bs.modal', function () {
@@ -737,8 +738,12 @@ if ($resultApp && $resultApp->num_rows > 0) {
             });
 
             $('.reset-btn').click(function () {
+
+                console.log("Reset button clicked" + selectedUserId);
+
                 selectedUserName = $(this).data('user-name');
-                selectedUserId = $(this).closest('tr').find('td:first').text();
+                selectedUserId = $(this).data('user-id');
+                selectedUserEmail = $(this).data('user-email');
                 $('#resetUserName').text(selectedUserName);
                 $('#resetPasswordModal').modal('show');
             });
@@ -746,27 +751,34 @@ if ($resultApp && $resultApp->num_rows > 0) {
             $('#confirmResetBtn').click(function () {
                 if (!selectedUserId) return;
 
+                console.log("Reset button clicked" + selectedUserName);
+                console.log("Reset button clicked" + selectedUserId);
+                console.log("Reset button clicked" + selectedUserEmail);
+
                 $('#resetLoading').removeClass('d-none');
                 $('#confirmResetBtn, #resetPasswordModal .btn-secondary').prop('disabled', true);
 
                 $.ajax({
                     url: 'reset_password.php',
                     method: 'POST',
-                    data: { user_id: selectedUserId },
+                    data: {
+                        user_id: selectedUserId,
+                        user_email: selectedUserEmail
+                    },
                     success: function () {
                         Swal.fire({
                             icon: 'success',
                             title: 'Password Reset!',
-                            text: `Password for ${selectedUserName} has been reset to default (password123).`,
+                            text: `Password for ${selectedUserName} has been reset to default (password123). Email sent successfully.`,
                             confirmButtonColor: '#0d6efd'
                         });
                         $('#resetPasswordModal').modal('hide');
                     },
-                    error: function () {
+                    error: function (xhr) {
                         Swal.fire({
                             icon: 'error',
                             title: 'Error!',
-                            text: 'Failed to reset password.',
+                            text: xhr.responseText, // shows the exact error from PHP
                             confirmButtonColor: '#d33'
                         });
                     },
@@ -775,6 +787,7 @@ if ($resultApp && $resultApp->num_rows > 0) {
                         $('#confirmResetBtn, #resetPasswordModal .btn-secondary').prop('disabled', false);
                     }
                 });
+
             });
 
             // ----- SIDEBAR TOGGLE -----

@@ -1,0 +1,6 @@
+{
+    "name": "ipams/project",
+    "require": {
+        "phpmailer/phpmailer": "^6.10"
+    }
+}
