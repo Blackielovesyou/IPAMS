@@ -263,37 +263,12 @@ if (!isset($_SESSION['id']) || !isset($_SESSION['role'])) {
         </form>
     </div>
 
-    <!-- Success Modal -->
-    <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header border-0 text-center">
-                    <div class="w-100">
-                        <div class="bg-success rounded-circle d-inline-flex align-items-center justify-content-center"
-                            style="width: 60px; height: 60px;">
-                            <i class="bi bi-check-lg text-white fs-3"></i>
-                        </div>
-                    </div>
-                    <button type="button" class="btn-close position-absolute top-0 end-0 m-3"
-                        data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body text-center pb-4">
-                    <h5 class="fw-bold mb-2">Application Submitted Successfully!</h5>
-                    <p class="text-muted mb-0">Your electrical permit application has been received. You'll receive a
-                        confirmation email shortly with your tracking number.</p>
-                </div>
-                <div class="modal-footer border-0 justify-content-center">
-                    <button type="button" class="btn btn-gradient" onclick="goBack()">
-                        <i class="bi bi-arrow-left me-2"></i>Back to Home
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
+    
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../javascript/permit.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
 </body>
 

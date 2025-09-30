@@ -29,15 +29,30 @@ while ($row = $result->fetch_assoc()) {
         <div class="container">
             <h2 class="fw-bold">Building Official’s Online Permit Services</h2>
             <p>Fast, efficient, and transparent permit processing for projects and businesses</p>
-            <div class="d-flex justify-content-center gap-2">
+            <div class="d-flex flex-column align-items-center gap-3">
                 <a href="public/php/loginform.php" class="btn btn-light">Apply for permit</a>
-                <a href="#faq" class="btn btn-outline-light">Track application</a>
             </div>
         </div>
     </section>
 
-    <!-- Quick Actions -->
+    <!-- Tracking Search Bar Section -->
     <section class="py-5 bg-light">
+        <div class="container d-flex justify-content-center">
+            <form class="d-flex w-100" action="public/php/track_application.php" method="get" style="max-width: 500px;">
+                <input type="text" name="tracking_number" class="form-control form-control-lg"
+                    placeholder="Enter Tracking Number" required
+                    style="border-top-right-radius: 0; border-bottom-right-radius: 0;">
+                <button type="submit" class="btn btn-primary btn-lg text-nowrap"
+                    style="border-top-left-radius: 0; border-bottom-left-radius: 0;">
+                    Track Application
+                </button>
+            </form>
+        </div>
+    </section>
+
+
+    <!-- Quick Actions -->
+    <section class="py-2 bg-light">
         <div class="container text-center">
             <h4 class="mb-4">Quick Actions</h4>
             <div class="row g-4">

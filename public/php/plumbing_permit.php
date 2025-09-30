@@ -50,221 +50,223 @@ if (!isset($_SESSION['id']) || !isset($_SESSION['role'])) {
     </nav>
 
     <!-- Form Content -->
-    <div class="container py-4">
-        <form id="occupancyPermitForm" class="mx-auto" style="max-width: 1000px;" method="POST"
-            action="permit_submit.php" enctype="multipart/form-data">
+    <form id="plumbingPermitForm" class="mx-auto" style="max-width: 1000px;" method="POST" action="permit_submit.php"
+        enctype="multipart/form-data">
 
-            <!-- Applicant Information -->
-            <div class="card form-card mb-4">
-                <div class="section-header">
-                    <h5 class="mb-0 fw-semibold d-flex align-items-center" style="color: rgb(59, 130, 246);">
-                        <i class="bi bi-person-badge me-2"></i>
-                        Applicant Information
-                    </h5>
-                </div>
-                <div class="card-body p-4">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <!-- Full Name * -->
-                            <label class="form-label fw-medium">Full Name *</label>
-                            <input type="text" class="form-control" name="full_name" id="full_name"
-                                placeholder="Enter building owner's full name" required>
-                        </div>
-                        <div class="col-md-6">
-                            <!-- Contact Number * -->
-                            <label class="form-label fw-medium">Contact Number *</label>
-                            <input type="tel" class="form-control" name="contact_number" id="contact_number"
-                                placeholder="+63 XXX XXX XXXX" required>
-                        </div>
-                        <div class="col-md-6">
-                            <!-- Email Address * -->
-                            <label class="form-label fw-medium">Email Address *</label>
-                            <input type="email" class="form-control" name="email" id="email"
-                                placeholder="your.email@example.com" required>
-                        </div>
-                        <div class="col-md-6">
-                            <!-- Address * -->
-                            <label class="form-label fw-medium">Address *</label>
-                            <input type="text" class="form-control" name="address" id="address"
-                                placeholder="Complete address of the owner" required>
-                        </div>
+        <!-- Hidden field to specify permit type -->
+        <input type="hidden" name="permit_type" value="plumbing">
+
+        <!-- Applicant Information -->
+        <div class="card form-card mb-4">
+            <div class="section-header">
+                <h5 class="mb-0 fw-semibold d-flex align-items-center" style="color: rgb(59, 130, 246);">
+                    <i class="bi bi-person-badge me-2"></i>
+                    Applicant Information
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <!-- Full Name * -->
+                        <label class="form-label fw-medium">Full Name *</label>
+                        <input type="text" class="form-control" name="full_name" id="full_name"
+                            placeholder="Enter building owner's full name" required>
+                    </div>
+                    <div class="col-md-6">
+                        <!-- Contact Number * -->
+                        <label class="form-label fw-medium">Contact Number *</label>
+                        <input type="tel" class="form-control" name="contact_number" id="contact_number"
+                            placeholder="+63 XXX XXX XXXX" required>
+                    </div>
+                    <div class="col-md-6">
+                        <!-- Email Address * -->
+                        <label class="form-label fw-medium">Email Address *</label>
+                        <input type="email" class="form-control" name="email" id="email"
+                            placeholder="your.email@example.com" required>
+                    </div>
+                    <div class="col-md-6">
+                        <!-- Address * -->
+                        <label class="form-label fw-medium">Address *</label>
+                        <input type="text" class="form-control" name="address" id="address"
+                            placeholder="Complete address of the owner" required>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Project Details -->
-            <div class="card form-card mb-4">
-                <div class="section-header">
-                    <h5 class="mb-0 fw-semibold d-flex align-items-center" style="color: rgb(142, 69, 238);">
-                        <i class="bi bi-tools me-2"></i>
-                        Project Details
-                    </h5>
-                </div>
+        <!-- Project Details -->
+        <div class="card form-card mb-4">
+            <div class="section-header">
+                <h5 class="mb-0 fw-semibold d-flex align-items-center" style="color: rgb(142, 69, 238);">
+                    <i class="bi bi-tools me-2"></i>
+                    Project Details
+                </h5>
+            </div>
 
-                <div class="card-body p-4">
-                    <div class="row g-3">
-                        <div class="col-12">
-                            <!-- Project Location * -->
-                            <label class="form-label fw-medium">Project Location *</label>
-                            <textarea class="form-control" name="project_location" id="project_location" rows="3"
-                                placeholder="Complete address of the building including lot number, block number, and subdivision"
-                                required></textarea>
-                        </div>
+            <div class="card-body p-4">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <!-- Project Location * -->
+                        <label class="form-label fw-medium">Project Location *</label>
+                        <textarea class="form-control" name="project_location" id="project_location" rows="3"
+                            placeholder="Complete address of the building including lot number, block number, and subdivision"
+                            required></textarea>
+                    </div>
 
-                        <div class="col-md-6">
-                            <!-- Types of Installation * -->
-                            <label class="form-label fw-medium">Types of Installation *</label>
-                            <select class="form-select" name="installation_type" id="installation_type" required>
-                                <option selected disabled>Select installation type</option>
-                                <option>New Installation</option>
-                                <option>Extension of Existing Installation</option>
-                                <option>Upgrading / Modernization</option>
-                                <option>Temporary Installation</option>
-                                <option>Repair / Maintenance</option>
-                            </select>
+                    <div class="col-md-6">
+                        <!-- Types of Installation * -->
+                        <label class="form-label fw-medium">Types of Installation *</label>
+                        <select class="form-select" name="installation_type" id="installation_type" required>
+                            <option selected disabled>Select installation type</option>
+                            <option>New Installation</option>
+                            <option>Extension of Existing Installation</option>
+                            <option>Upgrading / Modernization</option>
+                            <option>Temporary Installation</option>
+                            <option>Repair / Maintenance</option>
+                        </select>
 
-                        </div>
+                    </div>
 
-                        <div class="col-md-6">
-                            <!-- Purpose of Permit * -->
-                            <label class="form-label fw-medium">Purpose of Permit *</label>
-                            <select class="form-select" name="permit_purpose" id="permit_purpose" required>
-                                <option value="">Select purpose</option>
-                                <option value="new-installation">New Installation</option>
-                                <option value="additional-load">Additional Load</option>
-                                <option value="upgrade">Upgrading / Modernization</option>
-                                <option value="repair">Repair / Maintenance</option>
-                                <option value="temporary">Temporary Connection</option>
-                                <option value="generator">Generator / Backup Power</option>
-                                <option value="others">Others (Specify in Notes)</option>
-                            </select>
-                        </div>
+                    <div class="col-md-6">
+                        <!-- Purpose of Permit * -->
+                        <label class="form-label fw-medium">Purpose of Permit *</label>
+                        <select class="form-select" name="permit_purpose" id="permit_purpose" required>
+                            <option value="">Select purpose</option>
+                            <option value="new-installation">New Installation</option>
+                            <option value="additional-load">Additional Load</option>
+                            <option value="upgrade">Upgrading / Modernization</option>
+                            <option value="repair">Repair / Maintenance</option>
+                            <option value="temporary">Temporary Connection</option>
+                            <option value="generator">Generator / Backup Power</option>
+                            <option value="others">Others (Specify in Notes)</option>
+                        </select>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Required Documents -->
-            <div class="card form-card mb-4">
-                <div class="section-header">
-                    <h5 class="mb-0 fw-semibold d-flex align-items-center" style="color: rgb(16, 185, 129);">
-                        <i class="bi bi-file-earmark-text me-2"></i>
-                        Required Documents
-                    </h5>
+        <!-- Required Documents -->
+        <div class="card form-card mb-4">
+            <div class="section-header">
+                <h5 class="mb-0 fw-semibold d-flex align-items-center" style="color: rgb(16, 185, 129);">
+                    <i class="bi bi-file-earmark-text me-2"></i>
+                    Required Documents
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <p class="text-muted mb-4">Upload clear copies of all required documents for occupancy permit
+                    processing.</p>
+
+                <div class="mb-4">
+                    <!-- Plumbing Permit Application Form * -->
+                    <label class="form-label fw-medium">Plumbing Permit Application Form *</label>
+                    <div class="upload-area" onclick="document.getElementById('completionCert').click()">
+                        <i class="bi bi-cloud-arrow-up fs-2 text-secondary mb-2"></i>
+                        <p class="mb-1 fw-medium">Click to upload Certificate of Completion</p>
+                        <small class="text-muted">PDF, JPG, PNG up to 10MB</small>
+                        <input type="file" id="completionCert" name="completionCert" class="d-none"
+                            accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileUpload(this, 'completionCertPreview')"
+                            required>
+                    </div>
+                    <div id="completionCertPreview" class="file-preview">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        <span class="fw-medium">File uploaded successfully!</span>
+                    </div>
                 </div>
-                <div class="card-body p-4">
-                    <p class="text-muted mb-4">Upload clear copies of all required documents for occupancy permit
-                        processing.</p>
 
-                    <div class="mb-4">
-                        <!-- Plumbing Permit Application Form * -->
-                        <label class="form-label fw-medium">Plumbing Permit Application Form *</label>
-                        <div class="upload-area" onclick="document.getElementById('completionCert').click()">
-                            <i class="bi bi-cloud-arrow-up fs-2 text-secondary mb-2"></i>
-                            <p class="mb-1 fw-medium">Click to upload Certificate of Completion</p>
-                            <small class="text-muted">PDF, JPG, PNG up to 10MB</small>
-                            <input type="file" id="completionCert" name="completionCert" class="d-none"
-                                accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileUpload(this, 'completionCertPreview')"
-                                required>
-                        </div>
-                        <div id="completionCertPreview" class="file-preview">
-                            <i class="bi bi-check-circle text-success me-2"></i>
-                            <span class="fw-medium">File uploaded successfully!</span>
-                        </div>
+                <div class="mb-4">
+                    <!-- Approved Plumbing Plans signed by a Sanitary Engineer or Master Plumber * -->
+                    <label class="form-label fw-medium">Approved Plumbing Plans signed by a Sanitary Engineer or
+                        Master Plumber *</label>
+                    <div class="upload-area" onclick="document.getElementById('asBuiltPlans').click()">
+                        <i class="bi bi-cloud-arrow-up fs-2 text-secondary mb-2"></i>
+                        <p class="mb-1 fw-medium">Click to upload As-Built Plans</p>
+                        <small class="text-muted">Signed and sealed by licensed professional</small>
+                        <input type="file" id="asBuiltPlans" name="asBuiltPlans" class="d-none"
+                            accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileUpload(this, 'asBuiltPlansPreview')"
+                            required>
                     </div>
-
-                    <div class="mb-4">
-                        <!-- Approved Plumbing Plans signed by a Sanitary Engineer or Master Plumber * -->
-                        <label class="form-label fw-medium">Approved Plumbing Plans signed by a Sanitary Engineer or
-                            Master Plumber *</label>
-                        <div class="upload-area" onclick="document.getElementById('asBuiltPlans').click()">
-                            <i class="bi bi-cloud-arrow-up fs-2 text-secondary mb-2"></i>
-                            <p class="mb-1 fw-medium">Click to upload As-Built Plans</p>
-                            <small class="text-muted">Signed and sealed by licensed professional</small>
-                            <input type="file" id="asBuiltPlans" name="asBuiltPlans" class="d-none"
-                                accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileUpload(this, 'asBuiltPlansPreview')"
-                                required>
-                        </div>
-                        <div id="asBuiltPlansPreview" class="file-preview">
-                            <i class="bi bi-check-circle text-success me-2"></i>
-                            <span class="fw-medium">File uploaded successfully!</span>
-                        </div>
+                    <div id="asBuiltPlansPreview" class="file-preview">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        <span class="fw-medium">File uploaded successfully!</span>
                     </div>
+                </div>
 
-                    <div class="mb-4">
-                        <!-- Barangay Clearance * -->
-                        <label class="form-label fw-medium">Barangay Clearance *</label>
-                        <div class="upload-area" onclick="document.getElementById('electricalCert').click()">
-                            <i class="bi bi-cloud-arrow-up fs-2 text-secondary mb-2"></i>
-                            <p class="mb-1 fw-medium">Click to upload Electrical Certificate</p>
-                            <small class="text-muted">Certificate from licensed electrician</small>
-                            <input type="file" id="electricalCert" name="electricalCert" class="d-none"
-                                accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileUpload(this, 'electricalCertPreview')"
-                                required>
-                        </div>
-                        <div id="electricalCertPreview" class="file-preview">
-                            <i class="bi bi-check-circle text-success me-2"></i>
-                            <span class="fw-medium">File uploaded successfully!</span>
-                        </div>
+                <div class="mb-4">
+                    <!-- Barangay Clearance * -->
+                    <label class="form-label fw-medium">Barangay Clearance *</label>
+                    <div class="upload-area" onclick="document.getElementById('electricalCert').click()">
+                        <i class="bi bi-cloud-arrow-up fs-2 text-secondary mb-2"></i>
+                        <p class="mb-1 fw-medium">Click to upload Electrical Certificate</p>
+                        <small class="text-muted">Certificate from licensed electrician</small>
+                        <input type="file" id="electricalCert" name="electricalCert" class="d-none"
+                            accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileUpload(this, 'electricalCertPreview')"
+                            required>
                     </div>
-
-                    <div class="mb-4">
-                        <!-- Building Permit(sometimes required) * -->
-                        <label class="form-label fw-medium">Building Permit(sometimes required) *</label>
-                        <div class="upload-area" onclick="document.getElementById('plumbingCert').click()">
-                            <i class="bi bi-cloud-arrow-up fs-2 text-secondary mb-2"></i>
-                            <p class="mb-1 fw-medium">Click to upload Plumbing Certificate</p>
-                            <small class="text-muted">Certificate from licensed plumber</small>
-                            <input type="file" id="plumbingCert" name="plumbingCert" class="d-none"
-                                accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileUpload(this, 'plumbingCertPreview')"
-                                required>
-                        </div>
-                        <div id="plumbingCertPreview" class="file-preview">
-                            <i class="bi bi-check-circle text-success me-2"></i>
-                            <span class="fw-medium">File uploaded successfully!</span>
-                        </div>
+                    <div id="electricalCertPreview" class="file-preview">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        <span class="fw-medium">File uploaded successfully!</span>
                     </div>
+                </div>
 
-                    <div class="mb-4">
-                        <!-- Plumbing Inspection Report * -->
-                        <label class="form-label fw-medium">Plumbing Inspection Report *</label>
-                        <div class="upload-area" onclick="document.getElementById('fireSafetyCert').click()">
-                            <i class="bi bi-cloud-arrow-up fs-2 text-secondary mb-2"></i>
-                            <p class="mb-1 fw-medium">Click to upload Fire Safety Certificate</p>
-                            <small class="text-muted">Certificate from Fire Bureau</small>
-                            <input type="file" id="fireSafetyCert" name="fireSafetyCert" class="d-none"
-                                accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileUpload(this, 'fireSafetyCertPreview')"
-                                required>
-                        </div>
-                        <div id="fireSafetyCertPreview" class="file-preview">
-                            <i class="bi bi-check-circle text-success me-2"></i>
-                            <span class="fw-medium">File uploaded successfully!</span>
-                        </div>
+                <div class="mb-4">
+                    <!-- Building Permit(sometimes required) * -->
+                    <label class="form-label fw-medium">Building Permit(sometimes required) *</label>
+                    <div class="upload-area" onclick="document.getElementById('plumbingCert').click()">
+                        <i class="bi bi-cloud-arrow-up fs-2 text-secondary mb-2"></i>
+                        <p class="mb-1 fw-medium">Click to upload Plumbing Certificate</p>
+                        <small class="text-muted">Certificate from licensed plumber</small>
+                        <input type="file" id="plumbingCert" name="plumbingCert" class="d-none"
+                            accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileUpload(this, 'plumbingCertPreview')"
+                            required>
+                    </div>
+                    <div id="plumbingCertPreview" class="file-preview">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        <span class="fw-medium">File uploaded successfully!</span>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <!-- Plumbing Inspection Report * -->
+                    <label class="form-label fw-medium">Plumbing Inspection Report *</label>
+                    <div class="upload-area" onclick="document.getElementById('fireSafetyCert').click()">
+                        <i class="bi bi-cloud-arrow-up fs-2 text-secondary mb-2"></i>
+                        <p class="mb-1 fw-medium">Click to upload Fire Safety Certificate</p>
+                        <small class="text-muted">Certificate from Fire Bureau</small>
+                        <input type="file" id="fireSafetyCert" name="fireSafetyCert" class="d-none"
+                            accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileUpload(this, 'fireSafetyCertPreview')"
+                            required>
+                    </div>
+                    <div id="fireSafetyCertPreview" class="file-preview">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        <span class="fw-medium">File uploaded successfully!</span>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Additional Notes -->
-            <div class="card form-card mb-4">
-                <div class="section-header">
-                    <h5 class="mb-0 fw-semibold text-secondary">
-                        <i class="bi bi-journal-text me-2"></i>
-                        Additional Notes
-                    </h5>
-                </div>
-                <div class="card-body p-4">
-                    <textarea class="form-control" name="additional_notes" id="additional_notes" rows="4"
-                        placeholder="Any additional information or special circumstances regarding your building..."></textarea>
-                </div>
+        <!-- Additional Notes -->
+        <div class="card form-card mb-4">
+            <div class="section-header">
+                <h5 class="mb-0 fw-semibold text-secondary">
+                    <i class="bi bi-journal-text me-2"></i>
+                    Additional Notes
+                </h5>
             </div>
+            <div class="card-body p-4">
+                <textarea class="form-control" name="additional_notes" id="additional_notes" rows="4"
+                    placeholder="Any additional information or special circumstances regarding your building..."></textarea>
+            </div>
+        </div>
 
-            <!-- Submit Button -->
-            <div class="text-center">
-                <button type="submit" class="btn btn-gradient btn-lg px-5" id="submitBtn">
-                    <i class="bi bi-send me-2"></i>
-                    Submit Application
-                </button>
-            </div>
-        </form>
+        <!-- Submit Button -->
+        <div class="text-center">
+            <button type="submit" class="btn btn-gradient btn-lg px-5" id="submitBtn">
+                <i class="bi bi-send me-2"></i>
+                Submit Application
+            </button>
+        </div>
+    </form>
     </div>
 
     <!-- Success Modal -->
@@ -297,6 +299,7 @@ if (!isset($_SESSION['id']) || !isset($_SESSION['role'])) {
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="../javascript/permit.js"></script>
 </body>
 

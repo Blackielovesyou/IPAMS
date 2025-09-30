@@ -5,7 +5,7 @@ include("db.php");
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // --- Common fields ---
-    $permit_type = $_POST['permit_type'] ?? 'building';
+    $permit_type = !empty($_POST['permit_type']) ? $_POST['permit_type'] : 'building';
     $full_name = trim($_POST['full_name'] ?? $_POST['ownerName'] ?? '');
     $contact_number = trim($_POST['contact_number'] ?? $_POST['contactNumber'] ?? '');
     $email = trim($_POST['email'] ?? '');
@@ -119,8 +119,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $log->execute();
     $log->close();
 
-    $_SESSION['success'] = true;
-    header("Location: permit_success.php?application=" . urlencode($newAppNo));
+    header('Content-Type: application/json');
+    echo json_encode([
+        'success' => true,
+        'message' => "Permit application (#$newAppNo) submitted successfully!",
+        'application_number' => $newAppNo
+    ]);
     exit;
+
 }
 ?>

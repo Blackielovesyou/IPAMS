@@ -16,7 +16,7 @@ if (!isset($_SESSION['id']) || !isset($_SESSION['role'])) {
     exit;
 }
 
-// Only superadmin can access
+// Only supeadmin can access
 if ($_SESSION['role'] !== 'admin') {
     echo "<script>
         localStorage.setItem('lastPage', window.location.href);
@@ -160,7 +160,7 @@ if ($resultApp && $resultApp->num_rows > 0) {
 
         /* ✅ Table column widths */
         .table th.id {
-            width: 15%;
+            width: 5%;
         }
 
         .table th.applicant {
@@ -270,20 +270,27 @@ if ($resultApp && $resultApp->num_rows > 0) {
     </nav>
 
 
-    <!-- ✅ Main Content -->
     <!-- Sidebar -->
-    <div class="sidebar bg-white text-dark p-3">
-        <ul class="nav flex-column">
-            <li class="nav-item"><a href="#" class="nav-link active" data-section="dashboard">Dashboard</a></li>
-            <li class="nav-item"><a href="#" class="nav-link" data-section="applications">Permit Applications</a></li>
-            <li class="nav-item"><a href="#" class="nav-link" data-section="reports">Reports</a></li>
-            <li class="nav-item"><a href="#" class="nav-link" data-section="settings">Settings</a></li>
-        </ul>
-    </div>
+    <nav class="sidebar bg-white text-dark p-3">
+    <ul class="nav flex-column">
+        <li class="nav-item">
+            <a href="#" class="nav-link active" data-section="dashboard">Dashboard</a>
+        </li>
+        <li class="nav-item">
+            <a href="#" class="nav-link" data-section="applications">Permit Applications</a>
+        </li>
+        <li class="nav-item">
+            <a href="#" class="nav-link" data-section="reports">Reports</a>
+        </li>
+        <li class="nav-item">
+            <a href="#" class="nav-link" data-section="settings">Settings</a>
+        </li>
+    </ul>
+</nav>
+
 
     <div class="main-content">
 
-        <!-- ✅ Dashboard Section -->
         <!-- ✅ Dashboard Section -->
         <div id="dashboard" class="content-section">
 
@@ -344,13 +351,45 @@ if ($resultApp && $resultApp->num_rows > 0) {
                                 <th class="action">Action</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <?php
-                            if (!empty($applications)):
-                                $latestFive = array_slice($applications, 0, 5);
-                                foreach ($latestFive as $app): ?>
+                        <tbody><?php
+                        if (!empty($applications)):
+                            $latestFive = array_slice($applications, 0, 5);
+                            foreach ($latestFive as $app): ?>
                                     <tr>
-                                        <td><?php echo str_pad($app['id'], 6, '0', STR_PAD_LEFT); ?></td>
+                                        <td>
+                                            <?php
+                                            $year = date("Y", strtotime($app['created_at']));
+                                            $prefix = '';
+                                            $extra = '';
+
+                                            switch ($app['permit_type']) {
+                                                case 'building':
+                                                    $prefix = 'BP';
+                                                    $extra = $app['construction_type'] ?? '';
+                                                    break;
+                                                case 'electrical':
+                                                    $prefix = 'EP';
+                                                    $extra = $app['installation_type'] ?? '';
+                                                    break;
+                                                case 'plumbing':
+                                                    $prefix = 'PP';
+                                                    $extra = $app['installation_type'] ?? '';
+                                                    break;
+                                                case 'occupancy':
+                                                    $prefix = 'OP';
+                                                    $extra = $app['construction_type'] ?? '';
+                                                    break;
+                                            }
+
+                                            // Only include extra if it exists
+                                            $formatted = $prefix . '-' . $year . '-' . $app['application_number'];
+                                            if (!empty($extra)) {
+                                                $formatted .= '-' . $extra;
+                                            }
+
+                                            echo htmlspecialchars($formatted);
+                                            ?>
+                                        </td>
                                         <td><?php echo htmlspecialchars($app['full_name']); ?></td>
                                         <td><?php echo ucfirst(htmlspecialchars($app['permit_type'])); ?></td>
                                         <td><?php echo date("M d, Y", strtotime($app['created_at'])); ?></td>
@@ -371,6 +410,7 @@ if ($resultApp && $resultApp->num_rows > 0) {
                 </div>
             </div>
 
+
         </div>
 
         <!-- ✅ Permit Applications Section -->
@@ -390,12 +430,41 @@ if ($resultApp && $resultApp->num_rows > 0) {
                                 <th class="action">Action</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <?php if (!empty($applications)):
-                                foreach ($applications as $app): ?>
+                        <tbody><?php if (!empty($applications)):
+                            foreach ($applications as $app): ?>
                                     <tr>
-                                        <td data-id="<?php echo str_pad($app['id'], 6, '0', STR_PAD_LEFT); ?>">
-                                            <?php echo str_pad($app['id'], 6, '0', STR_PAD_LEFT); ?>
+                                        <td data-id="<?php echo htmlspecialchars($app['application_number']); ?>">
+                                            <?php
+                                            $year = date("Y", strtotime($app['created_at']));
+                                            $prefix = '';
+                                            $extra = '';
+
+                                            switch ($app['permit_type']) {
+                                                case 'building':
+                                                    $prefix = 'BP';
+                                                    $extra = $app['construction_type'] ?? '';
+                                                    break;
+                                                case 'electrical':
+                                                    $prefix = 'EP';
+                                                    $extra = $app['installation_type'] ?? '';
+                                                    break;
+                                                case 'plumbing':
+                                                    $prefix = 'PP';
+                                                    $extra = $app['installation_type'] ?? '';
+                                                    break;
+                                                case 'occupancy':
+                                                    $prefix = 'OP';
+                                                    $extra = $app['construction_type'] ?? '';
+                                                    break;
+                                            }
+
+                                            $formatted = $prefix . '-' . $year . '-' . $app['application_number'];
+                                            if (!empty($extra)) {
+                                                $formatted .= '-' . $extra;
+                                            }
+
+                                            echo htmlspecialchars($formatted);
+                                            ?>
                                         </td>
                                         <td><?php echo htmlspecialchars($app['full_name']); ?></td>
                                         <td><?php echo ucfirst(htmlspecialchars($app['permit_type'])); ?></td>
@@ -408,7 +477,7 @@ if ($resultApp && $resultApp->num_rows > 0) {
                                         </td>
                                     </tr>
                                 <?php endforeach;
-                            else: ?>
+                        else: ?>
                                 <tr>
                                     <td colspan="6" class="text-center">No applications found.</td>
                                 </tr>
@@ -418,6 +487,7 @@ if ($resultApp && $resultApp->num_rows > 0) {
                 </div>
             </div>
         </div>
+
 
         <!-- ✅ Scripts -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

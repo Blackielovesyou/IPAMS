@@ -32,3 +32,68 @@ function handleFileUpload(input, previewId) {
         preview.style.display = 'none';
     }
 }
+
+// --- Generic AJAX form submission handler ---
+function handlePermitFormSubmission(formId) {
+    const form = document.getElementById(formId);
+    if (!form) return;
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault(); // prevent normal form submission
+
+        const submitBtn = form.querySelector('#submitBtn');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="bi bi-arrow-repeat spin me-2"></i>Submitting...`;
+        }
+
+        const formData = new FormData(form);
+
+        fetch('permit_submit.php', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = `<i class="bi bi-send me-2"></i>Submit Application`;
+                }
+
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Submitted!',
+                        text: `Permit application (#${data.application_number}) submitted successfully!`,
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        form.reset();
+                        // reset file previews
+                        form.querySelectorAll('.file-preview').forEach(preview => preview.style.display = 'none');
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Something went wrong. Please try again.'
+                    });
+                }
+            })
+            .catch(err => {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = `<i class="bi bi-send me-2"></i>Submit Application`;
+                }
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Unable to submit the application. Please try again.'
+                });
+                console.error(err);
+            });
+    });
+}
+
+// --- Initialize all permit forms ---
+['buildingPermitForm', 'electricalPermitForm', 'occupancyPermitForm', 'plumbingPermitForm']
+    .forEach(handlePermitFormSubmission);

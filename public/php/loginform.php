@@ -225,7 +225,7 @@ if (isset($_SESSION['id']) && isset($_SESSION['role']) && !isset($_SESSION['succ
       Swal.fire({
         icon: 'success',
         title: 'Registration Successful!',
-        text: 'You can now log in with your account.',
+        text: 'Please check your email.',
         confirmButtonText: 'OK'
       });
     </script>

@@ -316,7 +316,6 @@ if ($resultApp && $resultApp->num_rows > 0) {
                 </h3>
 
                 <!-- Tabs + Add Button -->
-                <!-- Tabs + Add Button -->
                 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
                     <!-- Tabs -->
                     <ul class="nav nav-tabs" id="userTabs" role="tablist">
@@ -371,9 +370,8 @@ if ($resultApp && $resultApp->num_rows > 0) {
                                             <td>
                                                 <button class='btn btn-sm btn-primary edit-btn' title='Edit'><i class='bi bi-pencil'></i></button>
                                                 <button class='btn btn-sm btn-danger delete-btn' title='Delete'><i class='bi bi-trash'></i></button>
-                                                <button class='btn btn-sm btn-warning reset-btn' title='Reset Password' data-user-name='{$row['fullname']}'><i class='bi bi-key'></i></button>
+                                                <button class='btn btn-sm btn-warning reset-btn' title='Reset Password' data-user-name='{$row['fullname']}' data-user-email='{$row['email']}'  data-user-id='{$row['id']}'><i class='bi bi-key'></i></button>
                                             </td>
-
 
                                         </tr>";
                                                 }
@@ -769,7 +767,7 @@ if ($resultApp && $resultApp->num_rows > 0) {
                         Swal.fire({
                             icon: 'success',
                             title: 'Password Reset!',
-                            text: `Password for ${selectedUserName} has been reset to default (password123). Email sent successfully.`,
+                            text: `Password for ${selectedUserName} has been reset to default. Email sent successfully.`,
                             confirmButtonColor: '#0d6efd'
                         });
                         $('#resetPasswordModal').modal('hide');
