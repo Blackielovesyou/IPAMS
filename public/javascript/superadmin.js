@@ -1,98 +1,272 @@
-// -----------------------------
-// Utility to set active link
-// -----------------------------
-function setActiveLink(desktopId, mobileId) {
-  $(".sidebar .nav-link, .offcanvas-body .nav-link").removeClass("active");
-  if (desktopId) $("#" + desktopId).addClass("active");
-  if (mobileId) $("#" + mobileId).addClass("active");
+$(document).ready(function () {
+    $("body").addClass("loaded");
+
+    // ----- DATATABLES -----
+    $("#usersTable, #adminsTable, #applicantsTable, #logsTable").DataTable({
+        paging: true,
+        searching: true,
+        lengthChange: true,
+        pageLength: 10,
+        ordering: false,
+    });
+
+    $("#applicationsTable").DataTable({
+        pageLength: 10,
+        lengthChange: true,
+        searching: true,
+        ordering: true,
+        info: true,
+        language: {
+            search: "Search Applications:",
+            lengthMenu: "Show _MENU_ entries",
+            info: "Showing _START_ to _END_ of _TOTAL_ applications",
+            paginate: { previous: "Prev", next: "Next" }
+        }
+    });
+
+    // ----- BOOTSTRAP TOOLTIPS -----
+    $("[title]").each(function () {
+        new bootstrap.Tooltip(this);
+    });
+
+    let selectedUserId = "", selectedUserName = "", selectedUserEmail = "";
+    let selectedAppId = null; // For reject modal
+
+    // ----- RESET PASSWORD -----
+    $("#resetPasswordModal").on("show.bs.modal", function () {
+        $("#resetLoading").hide();
+        $("#confirmResetBtn, #resetPasswordModal .btn-secondary").prop("disabled", false);
+    });
+
+    $(".reset-btn").click(function () {
+        selectedUserName = $(this).data("user-name");
+        selectedUserId = $(this).data("user-id");
+        selectedUserEmail = $(this).data("user-email");
+        $("#resetUserName").text(selectedUserName);
+        $("#resetPasswordModal").modal("show");
+    });
+
+    $("#confirmResetBtn").click(function () {
+        if (!selectedUserId) return;
+        $("#resetLoading").removeClass("d-none");
+        $("#confirmResetBtn, #resetPasswordModal .btn-secondary").prop("disabled", true);
+
+        $.ajax({
+            url: "reset_password.php",
+            method: "POST",
+            data: { user_id: selectedUserId, user_email: selectedUserEmail },
+            success: function () {
+                Swal.fire({
+                    icon: "success",
+                    title: "Password Reset!",
+                    text: `Password for ${selectedUserName} has been reset.`,
+                    confirmButtonColor: "#0d6efd",
+                });
+                $("#resetPasswordModal").modal("hide");
+            },
+            error: function (xhr) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error!",
+                    text: xhr.responseText,
+                    confirmButtonColor: "#d33",
+                });
+            },
+            complete: function () {
+                $("#resetLoading").addClass("d-none");
+                $("#confirmResetBtn, #resetPasswordModal .btn-secondary").prop("disabled", false);
+            },
+        });
+    });
+
+    // ----- SIDEBAR TOGGLE -----
+    $("#sidebarToggle").click(function () {
+        $("body").toggleClass("sidebar-visible");
+        localStorage.setItem(
+            "sidebarState",
+            $("body").hasClass("sidebar-visible") ? "open" : "closed"
+        );
+    });
+    if (localStorage.getItem("sidebarState") === "open")
+        $("body").addClass("sidebar-visible");
+    $(document).click(function (e) {
+        if ($(window).width() < 992 && !$(e.target).closest(".sidebar, #sidebarToggle").length) {
+            $("body").removeClass("sidebar-visible");
+            localStorage.setItem("sidebarState", "closed");
+        }
+    });
+
+    // ----- SHOW LAST SECTION -----
+    showSection(localStorage.getItem("lastSection") || "#dashboardSection");
+
+    // ----- EDIT USER -----
+    $(document).on("click", ".edit-btn", function () {
+        let $row = $(this).closest("tr");
+        selectedUserId = $row.find("td:first").text();
+        selectedUserName = $row.find("td:eq(1)").text();
+        let email = $row.find("td:eq(2)").text();
+
+        $("#editUserId").val(selectedUserId);
+        $("#editFullName").val(selectedUserName);
+        $("#editEmail").val(email);
+        $("#editUserModal").modal("show");
+    });
+
+    $("#saveEditBtn").click(function () {
+        $.post(
+            "update_user.php",
+            {
+                id: $("#editUserId").val(),
+                fullname: $("#editFullName").val(),
+                email: $("#editEmail").val(),
+            },
+            function (res) {
+                if (res.success) {
+                    let $row = $(`#adminsTable tr td:first:contains(${res.id}), #applicantsTable tr td:first:contains(${res.id})`).closest("tr");
+                    $row.find("td:eq(1)").text(res.fullname);
+                    $row.find("td:eq(2)").text(res.email);
+                    Swal.fire("Updated!", "User info updated successfully.", "success");
+                    $("#editUserModal").modal("hide");
+                } else {
+                    Swal.fire("Error!", res.message || "Update failed.", "error");
+                }
+            },
+            "json"
+        );
+    });
+
+    // ----- ACCESS MANAGEMENT -----
+    $(document).on("click", ".access-btn", function() {
+        let userId = $(this).data("user-id");
+        let userName = $(this).data("user-name");
+
+        $("#accessUserId").val(userId);
+        $("#accessUserName").text(userName);
+
+        $.post("get_access.php", { user_id: userId }, function(data) {
+            $("#accessForm input[type=checkbox]").prop("checked", false);
+            if (data.success) {
+                data.modules.forEach(function(m) {
+                    $(`#accessForm input[value='${m}']`).prop("checked", true);
+                });
+            }
+        }, "json");
+
+        $("#accessModal").modal("show");
+    });
+
+    $("#accessForm").submit(function(e) {
+        e.preventDefault();
+        $.post("save_access.php", $(this).serialize(), function(data) {
+            if (data.success) {
+                alert("Access updated!");
+                $("#accessModal").modal("hide");
+            } else {
+                alert("Failed to update.");
+            }
+        }, "json");
+    });
+
+    // ----- DELETE USER -----
+    $(document).on("click", ".delete-btn", function () {
+        let $row = $(this).closest("tr");
+        selectedUserId = $row.find("td:first").text();
+        selectedUserName = $row.find("td:eq(1)").text();
+        $("#deleteUserName").text(selectedUserName);
+        $("#deleteUserModal").modal("show");
+    });
+
+    $("#confirmDeleteBtn").click(function () {
+        $.post(
+            "delete_user.php",
+            { id: selectedUserId },
+            function (res) {
+                if (res.success) {
+                    $(`#adminsTable tr td:first:contains(${selectedUserId}), #applicantsTable tr td:first:contains(${selectedUserId})`).closest("tr").remove();
+                    Swal.fire("Deleted!", "User has been deleted.", "success");
+                    $("#deleteUserModal").modal("hide");
+                } else {
+                    Swal.fire("Error!", res.message || "Deletion failed.", "error");
+                }
+            },
+            "json"
+        );
+    });
+
+    // ----- APPLICATIONS ACTION BUTTONS -----
+    $(document).on("click", ".view-btn", function () {
+        let id = $(this).data("id");
+        window.location.href = "review.php?id=" + id;
+    });
+
+    // Approve button
+    $(document).on("click", ".approve-btn", function () {
+        let id = $(this).data("id");
+        $.post('update_permit_status.php', { id: id, status: 'approved' }, function (res) {
+            if (res === 'success') {
+                $('#status-' + id)
+                    .removeClass('bg-warning bg-danger')
+                    .addClass('bg-success')
+                    .text('Approved');
+                $('#actions-' + id).html(''); // remove buttons
+                Swal.fire("Approved!", "Application " + id + " approved.", "success");
+            } else {
+                Swal.fire("Error!", "Failed to approve the application.", "error");
+            }
+        });
+    });
+
+    // Reject button: modal triggers are handled in HTML, JS below
+    $(document).on('click', '.reject-btn', function () {
+        selectedAppId = $(this).data('id');
+    });
+
+    $('#confirmRejectBtn').on('click', function () {
+        if (!selectedAppId) return;
+        $.post('update_permit_status.php', { id: selectedAppId, status: 'rejected' }, function (response) {
+            if (response === 'success') {
+                $('#status-' + selectedAppId)
+                    .removeClass('bg-warning bg-success')
+                    .addClass('bg-danger')
+                    .text('Rejected');
+                $('#actions-' + selectedAppId).html('');
+                $('#rejectModal').modal('hide');
+            } else {
+                alert('Failed to reject the application.');
+            }
+        });
+    });
+
+});
+
+// ----- FILTER USER TABLE -----
+function filterUserTable(role) {
+    $("#usersTable tbody tr").each(function () {
+        $(this).toggle(role === "All" || $(this).data("role") === role);
+    });
 }
 
-// -----------------------------
-// Section toggles
-// -----------------------------
-function showDashboard() {
-  $("#dashboardSection").show();
-  $("#userManagementSection, #systemSettingsSection, #systemLogsSection").hide();
-  setActiveLink("applicationLink", "applicationLinkMobile");
-  localStorage.setItem("activeSection", "dashboard");
+// ----- SHOW SECTION -----
+function showSection(sectionId) {
+    const sections = [
+        "#dashboardSection",
+        "#userManagementSection",
+        "#permitApplicationsSection",
+        "#systemSettingsSection",
+        "#systemLogsSection"
+    ];
+
+    sections.forEach(id => $(id).hide());
+    $(sectionId).show();
+
+    $(".sidebar .nav-link").removeClass("active");
+    $(`.sidebar .nav-link[onclick="showSection('${sectionId}')"]`).addClass("active");
+
+    localStorage.setItem("lastSection", sectionId);
 }
 
-function showUserManagement() {
-  $("#userManagementSection").show();
-  $("#dashboardSection, #systemSettingsSection, #systemLogsSection").hide();
-  setActiveLink("userManagementLink", "userManagementLinkMobile");
-  localStorage.setItem("activeSection", "userManagement");
-}
-
-function showSystemSettings() {
-  $("#systemSettingsSection").show();
-  $("#dashboardSection, #userManagementSection, #systemLogsSection").hide();
-  setActiveLink("systemSettingsLink", "systemSettingsLinkMobile");
-  localStorage.setItem("activeSection", "settings");
-}
-
-function showSystemLogs() {
-  $("#systemLogsSection").show();
-  $("#dashboardSection, #userManagementSection, #systemSettingsSection").hide();
-  setActiveLink("systemLogsLink", "systemLogsLinkMobile");
-  localStorage.setItem("activeSection", "logs");
-}
-
-// -----------------------------
-// Sub-forms inside System Settings
-// -----------------------------
-function showSystemInfo() {
-  $("#systemInfoForm").show();
-  $("#changePassForm").hide();
-  $("#btnSystemInfo").addClass("btn-primary").removeClass("btn-outline-primary");
-  $("#btnChangePass").addClass("btn-outline-primary").removeClass("btn-primary");
-  localStorage.setItem("activeSubForm", "systemInfo");
-}
-
-function showChangePass() {
-  $("#changePassForm").show();
-  $("#systemInfoForm").hide();
-  $("#btnChangePass").addClass("btn-primary").removeClass("btn-outline-primary");
-  $("#btnSystemInfo").addClass("btn-outline-primary").removeClass("btn-primary");
-  localStorage.setItem("activeSubForm", "changePass");
-}
-
-// -----------------------------
-// Toggle any generic form
-// -----------------------------
-function toggleForm(formId) {
-  const el = document.getElementById(formId);
-  el.style.display = (el.style.display === "none" || el.style.display === "") ? "block" : "none";
-}
-
-// -----------------------------
-// Restore last opened section & sub-form
-// -----------------------------
-document.addEventListener("DOMContentLoaded", function () {
-  const activeSection = localStorage.getItem("activeSection") || "dashboard";
-  const activeSubForm = localStorage.getItem("activeSubForm") || "systemInfo";
-
-  switch (activeSection) {
-    case "userManagement":
-      showUserManagement();
-      break;
-    case "settings":
-      showSystemSettings();
-      if (activeSubForm === "changePass") showChangePass();
-      else showSystemInfo();
-      break;
-    case "logs":
-      showSystemLogs();
-      break;
-    default:
-      showDashboard();
-      break;
-  }
-
-  // Handle last restricted page attempt
-  const lastPage = localStorage.getItem("lastPage");
-  if (lastPage) {
-    alert("You tried to access a restricted page: " + lastPage);
-    localStorage.removeItem("lastPage");
-  }
+// Restore last section on page load
+$(document).ready(function() {
+    const lastSection = localStorage.getItem("lastSection") || "#dashboardSection";
+    showSection(lastSection);
 });

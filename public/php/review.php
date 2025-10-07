@@ -3,7 +3,7 @@ session_start();
 include("db.php");
 
 // Allow only admins
-if (!isset($_SESSION['id']) || $_SESSION['role'] !== 'admin') {
+if (!isset($_SESSION['id']) || !in_array($_SESSION['role'], ['admin', 'superadmin'])) {
     header("Location: loginform.php");
     exit;
 }
@@ -14,7 +14,7 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 }
 $appId = intval($_GET['id']);
 
-// ✅ Update status to "under review" if currently "submitted"
+// Update status to "under review" if currently "submitted"
 $updateStatus = $conn->prepare("UPDATE permit_applications SET status = 'under review' WHERE id = ? AND status IN ('submitted','pending')");
 $updateStatus->bind_param("i", $appId);
 $updateStatus->execute();
@@ -50,48 +50,81 @@ $inspectQuery->close();
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Review Application #<?php echo htmlspecialchars($application['application_number']); ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<meta charset="UTF-8">
+<title>Review Application #<?php echo htmlspecialchars($application['application_number']); ?></title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+/* Body & page padding */
+body {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* Card styling */
+.card {
+    border-radius: 0.75rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+/* Card headers */
+.card-header {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* Table styling */
+.table th {
+    width: 180px;
+    font-weight: 600;
+}
+
+/* Badges */
+.badge {
+    font-size: 0.9rem;
+}
+
+/* Document card hover */
+.doc-card {
+    transition: all 0.3s ease;
+}
+.doc-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+}
+
+/* Modal */
+.modal-header {
+    border-bottom: none;
+    border-radius: 0.75rem 0.75rem 0 0;
+}
+</style>
 </head>
-<body class="bg-light">
+<body>
 
 <!-- Top Navigation Bar -->
-<nav class="navbar navbar-dark bg-primary shadow-sm mb-4 py-3">
+<nav class="navbar navbar-dark bg-primary shadow-sm mb-5 py-3">
     <div class="container-fluid d-flex align-items-center">
-        <!-- Back Button -->
-        <a href="admin_dashboard.php" 
-           class="btn btn-light btn-sm d-flex align-items-center px-3 py-1 fw-semibold rounded-3 shadow-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" 
-                 class="bi bi-arrow-left me-2" viewBox="0 0 16 16">
-                <path fill-rule="evenodd" 
-                      d="M15 8a.5.5 0 0 1-.5.5H2.707l4.147 
-                         4.146a.5.5 0 0 1-.708.708l-5-5a.5.5 
-                         0 0 1 0-.708l5-5a.5.5 
-                         0 0 1 .708.708L2.707 7.5H14.5A.5.5 
-                         0 0 1 15 8z"/>
-            </svg>
-            Back
-        </a>
-
-        <!-- Page Title -->
-        <span class="navbar-text text-white fw-bold ms-3 fs-5">
-            Review Application <span class="text-warning">
-            #<?php echo htmlspecialchars($application['application_number']); ?></span>
+        <span class="navbar-text text-white fw-bold fs-5">
+            Review Application <span class="text-warning">#<?php echo htmlspecialchars($application['application_number']); ?></span>
         </span>
     </div>
 </nav>
 
-<div class="container py-5">
+<div class="container pb-5">
 
     <!-- Applicant Information -->
-    <div class="card shadow-sm mb-4">
+    <div class="card shadow-sm mb-5">
         <div class="card-header bg-primary text-white">
             <h5 class="mb-0">Applicant Information</h5>
         </div>
         <div class="card-body">
             <table class="table table-borderless mb-0">
-                <tr><th width="200">Applicant</th><td><?php echo htmlspecialchars($application['full_name']); ?></td></tr>
+                <tr><th>Applicant</th><td><?php echo htmlspecialchars($application['full_name']); ?></td></tr>
                 <tr><th>Contact</th><td><?php echo htmlspecialchars($application['contact_number']); ?> | <?php echo htmlspecialchars($application['email']); ?></td></tr>
                 <tr><th>Address</th><td><?php echo htmlspecialchars($application['address']); ?></td></tr>
                 <tr><th>Project Location</th><td><?php echo htmlspecialchars($application['project_location']); ?></td></tr>
@@ -108,7 +141,7 @@ $inspectQuery->close();
     </div>
 
     <!-- Application Details -->
-    <div class="card shadow-sm mb-4">
+    <div class="card shadow-sm mb-5">
         <div class="card-header bg-secondary text-white">
             <h5 class="mb-0">Application Details</h5>
         </div>
@@ -127,7 +160,7 @@ $inspectQuery->close();
             <?php endif; ?>
 
             <?php if (!empty($application['additional_notes'])): ?>
-                <div class="alert alert-info mt-3">
+                <div class="alert alert-info mt-3 mb-0 rounded-3">
                     <strong>Notes:</strong><br>
                     <?php echo nl2br(htmlspecialchars($application['additional_notes'])); ?>
                 </div>
@@ -136,34 +169,32 @@ $inspectQuery->close();
     </div>
 
     <!-- Uploaded Documents -->
-    <div class="card shadow-sm mb-4">
+    <div class="card shadow-sm mb-5">
         <div class="card-header bg-dark text-white">
             <h5 class="mb-0">Uploaded Documents</h5>
         </div>
         <div class="card-body">
             <?php if (!empty($documents)): ?>
-                <div class="row">
+                <div class="row g-3">
                     <?php foreach ($documents as $doc): 
                         $filePath = "../upload/" . basename($doc['file_path']);
                         $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
                     ?>
-                        <div class="col-md-4 mb-3">
-                            <div class="card h-100 shadow-sm">
-                                <div class="card-body text-center">
-                                    <h6 class="card-title mb-3"><?php echo htmlspecialchars($doc['document_type']); ?></h6>
-                                    <?php if (in_array($ext, ['jpg','jpeg','png','gif','webp'])): ?>
-                                        <img src="<?php echo $filePath; ?>" class="img-fluid rounded mb-2" alt="Document Image">
-                                        <a href="<?php echo $filePath; ?>" target="_blank" class="btn btn-sm btn-outline-primary">View Full</a>
-                                    <?php elseif ($ext === 'pdf'): ?>
-                                        <embed src="<?php echo $filePath; ?>" type="application/pdf" width="100%" height="200px" class="mb-2"/>
-                                        <a href="<?php echo $filePath; ?>" target="_blank" class="btn btn-sm btn-outline-primary">Open PDF</a>
-                                    <?php else: ?>
-                                        <a href="<?php echo $filePath; ?>" target="_blank" class="btn btn-sm btn-outline-secondary">Download File</a>
-                                    <?php endif; ?>
-                                    <p class="text-muted small mt-2 mb-0">
-                                        Uploaded: <?php echo date("M d, Y h:i A", strtotime($doc['uploaded_at'])); ?>
-                                    </p>
-                                </div>
+                        <div class="col-md-4">
+                            <div class="card doc-card h-100 text-center shadow-sm p-2">
+                                <h6 class="card-title mb-3"><?php echo htmlspecialchars($doc['document_type']); ?></h6>
+                                <?php if (in_array($ext, ['jpg','jpeg','png','gif','webp'])): ?>
+                                    <img src="<?php echo $filePath; ?>" class="img-fluid rounded mb-2 border" alt="Document Image">
+                                    <a href="<?php echo $filePath; ?>" target="_blank" class="btn btn-sm btn-outline-primary">View Full</a>
+                                <?php elseif ($ext === 'pdf'): ?>
+                                    <embed src="<?php echo $filePath; ?>" type="application/pdf" width="100%" height="200px" class="mb-2 border"/>
+                                    <a href="<?php echo $filePath; ?>" target="_blank" class="btn btn-sm btn-outline-primary">Open PDF</a>
+                                <?php else: ?>
+                                    <a href="<?php echo $filePath; ?>" target="_blank" class="btn btn-sm btn-outline-secondary">Download File</a>
+                                <?php endif; ?>
+                                <p class="text-muted small mt-2 mb-0">
+                                    Uploaded: <?php echo date("M d, Y h:i A", strtotime($doc['uploaded_at'])); ?>
+                                </p>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -175,7 +206,7 @@ $inspectQuery->close();
     </div>
 
     <!-- Inspection Schedule -->
-    <div class="card shadow-sm mt-4">
+    <div class="card shadow-sm mb-5">
         <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Inspection Schedule</h5>
             <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#scheduleModal" 
@@ -197,9 +228,9 @@ $inspectQuery->close();
 
     <!-- Modal for Scheduling Inspection -->
     <div class="modal fade" id="scheduleModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
             <form id="scheduleForm" method="POST" action="schedule_inspection.php">
-                <div class="modal-content">
+                <div class="modal-content rounded-4 shadow">
                     <div class="modal-header bg-success text-white">
                         <h5 class="modal-title">Schedule Inspection</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -243,34 +274,28 @@ document.addEventListener("DOMContentLoaded", function() {
 
         fetch(form.action, { method: "POST", body: formData })
         .then(response => response.json())
-.then(data => {
-    if (data.success) {
-        messageDiv.classList.remove("d-none", "alert-danger");
-        messageDiv.classList.add("alert-success");
-        messageDiv.textContent = "Schedule saved successfully!";
-
-        // Disable schedule button
-        const scheduleBtn = document.querySelector('[data-bs-target="#scheduleModal"]');
-        if (scheduleBtn) scheduleBtn.disabled = true;
-
-        // Update the status badge dynamically
-        const statusBadge = document.querySelector('td span.badge');
-        if (statusBadge) {
-            statusBadge.textContent = "Scheduled";
-            statusBadge.className = "badge bg-info"; // or any color you want
-        }
-
-        setTimeout(() => {
-            const modal = bootstrap.Modal.getInstance(document.getElementById("scheduleModal"));
-            modal.hide();
-        }, 1500);
-    } else {
-        messageDiv.classList.remove("d-none", "alert-success");
-        messageDiv.classList.add("alert-danger");
-        messageDiv.textContent = data.message || "Failed to save schedule.";
-    }
-})
-
+        .then(data => {
+            if (data.success) {
+                messageDiv.classList.remove("d-none", "alert-danger");
+                messageDiv.classList.add("alert-success");
+                messageDiv.textContent = "Schedule saved successfully!";
+                const scheduleBtn = document.querySelector('[data-bs-target="#scheduleModal"]');
+                if (scheduleBtn) scheduleBtn.disabled = true;
+                const statusBadge = document.querySelector('td span.badge');
+                if (statusBadge) {
+                    statusBadge.textContent = "Scheduled";
+                    statusBadge.className = "badge bg-info";
+                }
+                setTimeout(() => {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById("scheduleModal"));
+                    modal.hide();
+                }, 1500);
+            } else {
+                messageDiv.classList.remove("d-none", "alert-success");
+                messageDiv.classList.add("alert-danger");
+                messageDiv.textContent = data.message || "Failed to save schedule.";
+            }
+        })
         .catch(err => {
             console.error(err);
             messageDiv.classList.remove("d-none", "alert-success");

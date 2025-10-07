@@ -19,18 +19,102 @@ while ($row = $result->fetch_assoc()) {
     <title>Building Official's Online Permit Services</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-</head>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <style>
+        body {
+            font-family: "Segoe UI", sans-serif;
+            background-color: #f9fafb;
+        }
+
+        section.bg-primary {
+            background: linear-gradient(135deg, #0d6efd, #0b4ea2);
+        }
+
+        .btn-light {
+            border-radius: 50px;
+            padding: 10px 25px;
+            font-weight: 600;
+        }
+
+        .card {
+            border-radius: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0px 6px 18px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-body h5 {
+            color: #0d4166;
+        }
+
+        #faq {
+            background-color: #ffffff;
+        }
+
+        #faq h4 {
+            font-weight: 700;
+            color: #0d4166;
+        }
+
+        .accordion-button:not(.collapsed) {
+            background-color: #e7f1ff;
+            color: #0b4ea2;
+        }
+
+        #contact {
+            background-color: #f8f9fa;
+        }
+
+        #contact h2 {
+            color: #0d4166;
+        }
+
+        .card i {
+            font-size: 2rem;
+        }
+
+        footer {
+            font-size: 0.9rem;
+        }
+
+        footer h6 {
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        footer .custom-hr {
+            border: 0;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.2);
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            footer .col-4 {
+                width: 100%;
+                text-align: center;
+                margin-bottom: 1.5rem;
+            }
+        }
+    </style>
+</head>
 
 <body>
 
     <!-- Header Section -->
     <section class="bg-primary text-white text-center py-5">
         <div class="container">
-            <h2 class="fw-bold">Building Official’s Online Permit Services</h2>
-            <p>Fast, efficient, and transparent permit processing for projects and businesses</p>
+            <h2 class="fw-bold mb-3">Building Official’s Online Permit Services</h2>
+            <p class="mb-4">Fast, efficient, and transparent permit processing for projects and businesses</p>
             <div class="d-flex flex-column align-items-center gap-3">
-                <a href="public/php/loginform.php" class="btn btn-light">Apply for permit</a>
+                <a href="public/php/loginform.php" class="btn btn-light shadow-sm px-4 py-2">
+                    <i class="bi bi-file-earmark-text me-2"></i> Apply for Permit
+                </a>
             </div>
         </div>
     </section>
@@ -38,54 +122,52 @@ while ($row = $result->fetch_assoc()) {
     <!-- Tracking Search Bar Section -->
     <section class="py-5 bg-light">
         <div class="container d-flex justify-content-center">
-            <form class="d-flex w-100" action="public/php/track_application.php" method="get" style="max-width: 500px;">
-                <input type="text" name="tracking_number" class="form-control form-control-lg"
-                    placeholder="Enter Tracking Number" required
-                    style="border-top-right-radius: 0; border-bottom-right-radius: 0;">
-                <button type="submit" class="btn btn-primary btn-lg text-nowrap"
-                    style="border-top-left-radius: 0; border-bottom-left-radius: 0;">
-                    Track Application
+            <form id="trackingForm" class="d-flex w-100 shadow-sm rounded-3 overflow-hidden"
+                style="max-width: 550px;">
+                <input type="text" id="trackingNumber" name="tracking_number" class="form-control form-control-lg border-0"
+                    placeholder="Enter Tracking Number" required>
+                <button type="submit" class="btn btn-primary btn-lg text-nowrap px-4">
+                    <i class="bi bi-search me-1"></i> Track
                 </button>
             </form>
         </div>
     </section>
 
-
     <!-- Quick Actions -->
-    <section class="py-2 bg-light">
+    <section class="py-5 bg-white">
         <div class="container text-center">
-            <h4 class="mb-4">Quick Actions</h4>
+            <h4 class="fw-bold text-primary mb-5">Quick Actions</h4>
             <div class="row g-4">
 
-                <!-- New Permit -->
                 <div class="col-12 col-md-4">
                     <div class="card shadow-sm h-100">
-                        <div class="card-body">
+                        <div class="card-body p-4">
+                            <div class="mb-3"><i class="bi bi-file-earmark-plus text-primary fs-2"></i></div>
                             <h5 class="card-title">New Permit</h5>
-                            <p class="card-text">Apply for a new building permit online quickly and securely.</p>
-                            <a href="#" class="text-decoration-none fw-bold text-primary">Apply Now →</a>
+                            <p class="card-text text-muted">Apply for a new building permit online quickly and securely.</p>
+                            <a href="#" class="fw-bold text-primary text-decoration-none">Apply Now →</a>
                         </div>
                     </div>
                 </div>
 
-                <!-- Track Status -->
                 <div class="col-12 col-md-4">
                     <div class="card shadow-sm h-100">
-                        <div class="card-body">
+                        <div class="card-body p-4">
+                            <div class="mb-3"><i class="bi bi-clock-history text-primary fs-2"></i></div>
                             <h5 class="card-title">Track Status</h5>
-                            <p class="card-text">Check the progress of your ongoing permit applications.</p>
-                            <a href="#" class="text-decoration-none fw-bold text-primary">Track →</a>
+                            <p class="card-text text-muted">Check the progress of your ongoing permit applications.</p>
+                            <a href="#" class="fw-bold text-primary text-decoration-none">Track →</a>
                         </div>
                     </div>
                 </div>
 
-                <!-- Schedule -->
                 <div class="col-12 col-md-4">
                     <div class="card shadow-sm h-100">
-                        <div class="card-body">
+                        <div class="card-body p-4">
+                            <div class="mb-3"><i class="bi bi-calendar-check text-primary fs-2"></i></div>
                             <h5 class="card-title">Schedule</h5>
-                            <p class="card-text">Book an inspection or schedule appointments with officials.</p>
-                            <a href="#" class="text-decoration-none fw-bold text-primary">Book Now →</a>
+                            <p class="card-text text-muted">Book an inspection or schedule appointments with officials.</p>
+                            <a href="#" class="fw-bold text-primary text-decoration-none">Book Now →</a>
                         </div>
                     </div>
                 </div>
@@ -94,73 +176,18 @@ while ($row = $result->fetch_assoc()) {
         </div>
     </section>
 
-
-    <!-- FAQ -->
-    <section id="faq" class="py-5">
-        <div class="container">
-            <h4 class="text-center mb-4">Frequently Asked Questions</h4>
-            <div class="accordion" id="faqAccordion">
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="q1">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#a1">
-                            How long does permit approval take?
-                        </button>
-                    </h2>
-                    <div id="a1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                        <div class="accordion-body">
-                            Most applications are processed within 5–10 business days, while commercial permits may take
-                            2–3 weeks.
-                        </div>
-                    </div>
-                </div>
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="q2">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#a2">
-                            What documents do I need to submit?
-                        </button>
-                    </h2>
-                    <div id="a2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                        <div class="accordion-body">
-                            Site development plans, legal property documents, construction drawings, and related
-                            calculations.
-                        </div>
-                    </div>
-                </div>
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="q3">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#a3">
-                            How much do permits cost?
-                        </button>
-                    </h2>
-                    <div id="a3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                        <div class="accordion-body">
-                            Fees vary depending on the scope of work. Use our Permit Calculator or contact our office
-                            for details.
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Contact -->
     <!-- Contact Section -->
-    <section class="py-5 bg-light">
+    <section id="contact" class="py-5">
         <div class="container">
-            <h2 class="text-center fw-bold mb-5 text-dark">Contact Us</h2>
+            <h2 class="text-center fw-bold mb-5">Contact Us</h2>
             <div class="row g-4 justify-content-center">
-
-                <!-- Office Information -->
                 <?php if (isset($contacts['Office'])):
                     $office = $contacts['Office']; ?>
                     <div class="col-md-6 col-lg-5">
-                        <div class="card shadow-lg border-0 h-100 rounded-3">
+                        <div class="card shadow border-0 h-100 rounded-4">
                             <div class="card-body text-center p-4">
                                 <div class="mb-3">
-                                    <i class="bi bi-building fs-1 text-primary"></i>
+                                    <i class="bi bi-building text-primary"></i>
                                 </div>
                                 <h5 class="fw-bold mb-3 text-primary"><?= htmlspecialchars($office['title']) ?></h5>
                                 <?php if ($office['address']): ?>
@@ -192,14 +219,13 @@ while ($row = $result->fetch_assoc()) {
                     </div>
                 <?php endif; ?>
 
-                <!-- Emergency Contact -->
                 <?php if (isset($contacts['Emergency'])):
                     $emergency = $contacts['Emergency']; ?>
                     <div class="col-md-6 col-lg-5">
-                        <div class="card shadow-lg border-0 h-100 rounded-3">
+                        <div class="card shadow border-0 h-100 rounded-4">
                             <div class="card-body text-center p-4">
                                 <div class="mb-3">
-                                    <i class="bi bi-exclamation-triangle-fill fs-1 text-danger"></i>
+                                    <i class="bi bi-exclamation-triangle-fill text-danger"></i>
                                 </div>
                                 <h5 class="fw-bold mb-3 text-danger"><?= htmlspecialchars($emergency['title']) ?></h5>
                                 <?php if ($emergency['notes']): ?>
@@ -218,45 +244,51 @@ while ($row = $result->fetch_assoc()) {
                         </div>
                     </div>
                 <?php endif; ?>
-
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="bg-dark text-white text-center py-4 position-relative">
-        <div class="container">
-            <div class="row">
-                <div class="col-4">
-                    <h6>Office of the Building Official</h6>
-                    <p class="small">Regulating and ensuring safe building practices for all projects.</p>
-                </div>
-                <div class="col-4">
-                    <h6>Frequently Asked Questions</h6>
-                    <ul class="list-unstyled">
-                        <li><a href="" class="text-white text-decoration-none small">Apply for Permit</a></li>
-                        <li><a href="#" class="text-white text-decoration-none small">Track Status</a></li>
-                        <li><a href="#" class="text-white text-decoration-none small">Schedule</a></li>
-                    </ul>
-                </div>
-                <div class="col-4">
-                    <h6>Contact Info</h6>
-                    <p class="small mb-1">123 City Hall St, Springfield</p>
-                    <p class="small mb-0">Email: cityhall@springfield.gov</p>
-                </div>
-            </div>
-        </div>
-        <!-- Full-width HR -->
-        <hr class="custom-hr">
-
+    <footer class="bg-dark text-white text-center py-5 position-relative">
         <div class="container">
             <p class="mt-3 mb-0 small">&copy; 2025 City of Springfield. All rights reserved.</p>
         </div>
     </footer>
 
-
-    <!-- Bootstrap JS -->
+    <!-- Bootstrap + JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
 
+    <script>
+        document.getElementById("trackingForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const trackingNumber = document.getElementById("trackingNumber").value.trim();
+
+            if (trackingNumber === "") return;
+
+            fetch("public/php/check_tracking.php?tracking_number=" + encodeURIComponent(trackingNumber))
+                .then(res => res.json())
+                .then(data => {
+                    if (data.exists) {
+                        // Redirect to the actual tracking page
+                        window.location.href = "public/php/track_application.php?tracking_number=" + encodeURIComponent(trackingNumber);
+                    } else {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Invalid Tracking Number",
+                            text: "The tracking number you entered does not exist. Please check and try again.",
+                            confirmButtonColor: "#0d6efd"
+                        });
+                    }
+                })
+                .catch(() => {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Server Error",
+                        text: "Something went wrong while checking the tracking number.",
+                        confirmButtonColor: "#0d6efd"
+                    });
+                });
+        });
+    </script>
+</body>
 </html>

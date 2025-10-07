@@ -1,90 +1,207 @@
-/* Prevent horizontal scrolling on all devices */
-html,
+/* ✅ Hide page until fully styled */
 body {
-  overflow-x: hidden;
-  width: 100%;
+    min-height: 100vh;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease-in;
 }
 
-.container-fluid,
-.row,
-main,
-nav,
-.offcanvas {
-  max-width: 100vw;
-  box-sizing: border-box;
+body.loaded {
+    visibility: visible;
+    opacity: 1;
 }
 
+/* Sidebar */
+.sidebar {
+    position: fixed;
+    top: 56px; /* height of navbar */
+    left: -280px; /* hidden by default */
+    width: 280px;
+    height: 100%;
+    background: #fff;
+    border-right: 1px solid #ddd;
+    transition: left 0.3s ease;
+    z-index: 2000; /* ✅ above main content */
+    padding: 1rem;
+}
+
+body.sidebar-visible .sidebar {
+    left: 0;
+}
+
+/* Main content */
+.main-content {
+    margin-left: 0;
+    padding-top: 80px; /* space for fixed navbar */
+    transition: margin-left 0.3s ease;
+}
+
+/* Push content on desktop */
+@media (min-width: 992px) {
+    body.sidebar-visible .main-content {
+        margin-left: 280px;
+    }
+}
+
+/* Sidebar links */
+.sidebar .nav-link {
+    font-weight: 600;
+    color: #000 !important;
+    transition: background-color 0.2s, color 0.2s;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+    background-color: #0d6efd;
+    color: #fff !important;
+}
+
+/* Hide sections by default */
+#systemSettingsSection,
+#systemLogsSection {
+    display: none;
+}
+
+/* Remove DataTables sorting arrows */
+table.dataTable thead th::after {
+    content: "" !important;
+    display: none !important;
+}
+
+/* Dashboard Cards: stack nicely on mobile */
+@media (max-width: 575.98px) {
+    .row .col-6.col-lg-3 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
+
+/* Sidebar overlay on mobile */
 @media (max-width: 991.98px) {
-  #offcanvasSidebar {
-    width: 75% !important;
-    /* increased from 50% */
-    border-radius: 0 10px 10px 0;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
-  }
+    .sidebar {
+        left: -250px;
+        width: 250px;
+        top: 56px;
+        height: calc(100% - 56px);
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    }
+
+    body.sidebar-visible .sidebar {
+        left: 0;
+    }
+
+    .main-content {
+        margin-left: 0 !important;
+        padding: 70px 15px 20px 15px;
+    }
 }
 
-/* Offcanvas nav link styling */
-#offcanvasSidebar .nav-link {
-  padding: 0.5rem 0.75rem;
-  border-radius: 5px;
+/* Tables: wrap long buttons */
+.table td .btn {
+    white-space: nowrap;
+    margin-bottom: 5px;
 }
 
-#offcanvasSidebar .nav-link:hover {
-  background-color: #f1f1f1;
-  text-decoration: none;
+/* Modals and forms on mobile */
+@media (max-width: 576px) {
+    .modal-body {
+        padding: 1rem;
+    }
+
+    .modal-footer {
+        flex-direction: column;
+    }
+
+    .modal-footer .btn {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+
+    .d-grid button {
+        width: 100%;
+    }
 }
 
-/* Offcanvas title */
-#offcanvasSidebarLabel {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+/* ✅ Mobile-friendly layout for tabs + Add Account button */
+@media (max-width: 767.98px) {
+    #userManagementSection .d-flex {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+
+    #userManagementSection .nav-tabs {
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+    }
+
+    #userManagementSection .btn {
+        width: 100%;
+    }
+}
+/* ===== Permit Applications Section Styling ===== */
+#permitApplicationsSection h3 i {
+    font-size: 1.5rem;
 }
 
-/* Responsive cards */
-@media (max-width: 575.98px) {
-  .card h6 {
+#permitApplicationsSection .card {
+    border-radius: 15px;
+    overflow: hidden;
+    border: none;
+}
+
+#permitApplicationsSection .card-body {
+    background-color: #f9fafc;
+}
+
+#permitApplicationsSection table thead th {
+    background-color: #e9f2ff;
+    font-weight: 600;
     font-size: 0.9rem;
-  }
-
-  .card h4 {
-    font-size: 1.2rem;
-  }
-
-  .card small {
-    font-size: 0.75rem;
-  }
+    border-bottom: 2px solid #dee2e6;
 }
 
-/* Navbar improvements */
-.navbar-brand div {
-  white-space: normal;
-  /* Wrap text instead of squeezing */
-}
-
-.navbar-brand .h6 {
-  font-size: 1rem;
-}
-
-.navbar-brand small {
-  font-size: 0.75rem;
-}
-
-@media (max-width: 575.98px) {
-  .navbar-brand .h6 {
+#permitApplicationsSection table td {
     font-size: 0.9rem;
-  }
-
-  .navbar-brand small {
-    font-size: 0.65rem;
-  }
-
-  .d-flex.align-items-center.ms-auto span {
-    font-size: 0.8rem;
-  }
-
-  .d-flex.align-items-center.ms-auto button {
-    font-size: 0.75rem;
-    padding: 0.25rem 0.5rem;
-  }
+    vertical-align: middle;
 }
+
+#permitApplicationsSection .badge {
+    font-size: 0.75rem;
+    text-transform: capitalize;
+}
+
+#permitApplicationsSection .btn-group .btn {
+    border-radius: 6px !important;
+    margin-right: 2px;
+    transition: all 0.2s ease;
+}
+
+#permitApplicationsSection .btn-group .btn:hover {
+    transform: scale(1.05);
+}
+
+/* Search bar and refresh button alignment */
+#permitApplicationsSection #searchApplications {
+    width: 180px;
+}
+
+/* Make table scroll smooth on mobile */
+@media (max-width: 768px) {
+    #permitApplicationsSection .table-responsive {
+        border-radius: 10px;
+        overflow-x: auto;
+    }
+
+    #permitApplicationsSection #searchApplications {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    #permitApplicationsSection .d-flex.justify-content-between {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+

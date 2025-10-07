@@ -3,11 +3,10 @@ session_start();
 include("db.php");
 
 // ✅ Only admin can schedule inspections
-if (!isset($_SESSION['id']) || $_SESSION['role'] !== 'admin') {
+if (!isset($_SESSION['id']) || !in_array($_SESSION['role'], ['admin', 'superadmin'])) {
     echo json_encode(['success' => false, 'message' => 'Unauthorized']);
     exit;
 }
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $appId = intval($_POST['application_id']);
     $date = trim($_POST['inspection_date']);

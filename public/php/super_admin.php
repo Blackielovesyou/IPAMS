@@ -1,14 +1,14 @@
 <?php
 session_start();
-include("db.php"); // Include your DB connection
+require_once "db.php"; // DB connection
 
-// Prevent caching
+// No caching
 header("Cache-Control: no-cache, no-store, must-revalidate");
 header("Pragma: no-cache");
 header("Expires: 0");
 
-// If not logged in → block
-if (!isset($_SESSION['id']) || !isset($_SESSION['role'])) {
+// Auth check
+if (!isset($_SESSION['id'], $_SESSION['role'])) {
     echo "<script>
         localStorage.setItem('lastPage', window.location.href);
         window.history.back();
@@ -16,7 +16,7 @@ if (!isset($_SESSION['id']) || !isset($_SESSION['role'])) {
     exit;
 }
 
-// Only superadmin can access
+// Role check – only superadmin allowed
 if ($_SESSION['role'] !== 'superadmin') {
     echo "<script>
         localStorage.setItem('lastPage', window.location.href);
@@ -25,17 +25,30 @@ if ($_SESSION['role'] !== 'superadmin') {
     exit;
 }
 
-// ✅ Allowed
 $userRole = $_SESSION['role'];
 
-// Fetch app name from database
-$appName = "MyApp"; // fallback
-$sqlApp = "SELECT appname FROM app_info ORDER BY id LIMIT 1";
-$resultApp = $conn->query($sqlApp);
+// App name
+$appName = "MyApp";
+$sqlApp = "SELECT appname FROM app_info ORDER BY id ASC LIMIT 1";
+if ($resultApp = $conn->query($sqlApp)) {
+    if ($resultApp->num_rows > 0) {
+        $rowApp = $resultApp->fetch_assoc();
+        $appName = htmlspecialchars($rowApp['appname']);
+    }
+    $resultApp->free();
+}
 
-if ($resultApp && $resultApp->num_rows > 0) {
-    $rowApp = $resultApp->fetch_assoc();
-    $appName = $rowApp['appname'];
+// ✅ Fetch permit applications directly (no need to join users table)
+$applications = [];
+$sqlApps = "SELECT id, application_number, permit_type, full_name, email, status, created_at
+            FROM permit_applications
+            ORDER BY created_at DESC";
+$resultApps = $conn->query($sqlApps);
+if ($resultApps) {
+    while ($row = $resultApps->fetch_assoc()) {
+        $applications[] = $row;
+    }
+    $resultApps->free();
 }
 ?>
 
@@ -48,157 +61,10 @@ if ($resultApp && $resultApp->num_rows > 0) {
     <title>OBO SuperAdmin Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/superadmin.css">
 
     <!-- DataTables CSS -->
     <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-    <style>
-        /* ✅ Hide page until fully styled */
-        body {
-            min-height: 100vh;
-            visibility: hidden;
-            opacity: 0;
-            transition: opacity 0.3s ease-in;
-        }
-
-        body.loaded {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            position: fixed;
-            top: 56px;
-            /* height of navbar */
-            left: -280px;
-            /* hidden by default */
-            width: 280px;
-            height: 100%;
-            background: #fff;
-            border-right: 1px solid #ddd;
-            transition: left 0.3s ease;
-            z-index: 2000;
-            /* ✅ above main content */
-            padding: 1rem;
-        }
-
-        body.sidebar-visible .sidebar {
-            left: 0;
-        }
-
-        /* Main content */
-        .main-content {
-            margin-left: 0;
-            padding-top: 80px;
-            /* space for fixed navbar */
-            transition: margin-left 0.3s ease;
-        }
-
-        /* Push content on desktop */
-        @media (min-width: 992px) {
-            body.sidebar-visible .main-content {
-                margin-left: 280px;
-            }
-        }
-
-        /* Sidebar links */
-        .sidebar .nav-link {
-            font-weight: 600;
-            color: #000 !important;
-            transition: background-color 0.2s, color 0.2s;
-            cursor: pointer;
-            border-radius: 8px;
-        }
-
-        .sidebar .nav-link:hover,
-        .sidebar .nav-link.active {
-            background-color: #0d6efd;
-            color: #fff !important;
-        }
-
-        /* Hide sections by default */
-        #systemSettingsSection,
-        #systemLogsSection {
-            display: none;
-        }
-
-        /* Remove DataTables sorting arrows */
-        table.dataTable thead th::after {
-            content: "" !important;
-            display: none !important;
-        }
-
-        /* Dashboard Cards: stack nicely on mobile */
-        @media (max-width: 575.98px) {
-            .row .col-6.col-lg-3 {
-                flex: 0 0 100%;
-                max-width: 100%;
-            }
-        }
-
-        /* Sidebar overlay on mobile */
-        @media (max-width: 991.98px) {
-            .sidebar {
-                left: -250px;
-                width: 250px;
-                top: 56px;
-                height: calc(100% - 56px);
-                box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-            }
-
-            body.sidebar-visible .sidebar {
-                left: 0;
-            }
-
-            .main-content {
-                margin-left: 0 !important;
-                padding: 70px 15px 20px 15px;
-            }
-        }
-
-        /* Tables: wrap long buttons */
-        .table td .btn {
-            white-space: nowrap;
-            margin-bottom: 5px;
-        }
-
-        /* Modals and forms on mobile */
-        @media (max-width: 576px) {
-            .modal-body {
-                padding: 1rem;
-            }
-
-            .modal-footer {
-                flex-direction: column;
-            }
-
-            .modal-footer .btn {
-                width: 100%;
-                margin-bottom: 5px;
-            }
-
-            .d-grid button {
-                width: 100%;
-            }
-        }
-
-        /* ✅ Mobile-friendly layout for tabs + Add Account button */
-        @media (max-width: 767.98px) {
-            #userManagementSection .d-flex {
-                flex-direction: column;
-                align-items: stretch !important;
-            }
-
-            #userManagementSection .nav-tabs {
-                margin-bottom: 10px;
-                flex-wrap: wrap;
-            }
-
-            #userManagementSection .btn {
-                width: 100%;
-            }
-        }
-    </style>
 
 </head>
 
@@ -242,6 +108,9 @@ if ($resultApp && $resultApp->num_rows > 0) {
             </a>
             <a class="nav-link mb-3" onclick="showSection('#userManagementSection')">
                 <i class="bi bi-person-fill me-2"></i> User Management
+            </a>
+            <a class="nav-link mb-3" onclick="showSection('#permitApplicationsSection')">
+                <i class="bi bi-clipboard-check-fill me-2"></i> Permit Applications
             </a>
             <a class="nav-link mb-3" onclick="showSection('#systemSettingsSection')">
                 <i class="bi bi-gear-fill me-2"></i> System Settings
@@ -309,6 +178,96 @@ if ($resultApp && $resultApp->num_rows > 0) {
                 </div>
             </div>
 
+            <!-- Permit Applications Section (hidden by default) -->
+            <div id="permitApplicationsSection" style="display: none;">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+        <h3 class="fw-bold text-dark d-flex align-items-center mb-2" style="font-size: 1.4rem;">
+            <i class="bi bi-clipboard-check-fill text-primary me-2"></i>
+            Permit Applications
+        </h3>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-3">
+            <div class="table-responsive">
+                <table id="applicationsTable" class="table table-hover align-middle text-center mb-0">
+                    <thead class="table-primary text-dark">
+                        <tr>
+                            <th>Application No.</th>
+                            <th>Applicant</th>
+                            <th>Permit Type</th>
+                            <th>Status</th>
+                            <th>Submitted On</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (!empty($applications)): ?>
+                            <?php foreach ($applications as $app): ?>
+                                <tr id="appRow-<?= $app['id'] ?>">
+                                    <td>
+                                        <?php
+                                        $year = date("Y", strtotime($app['created_at']));
+                                        $prefix = match ($app['permit_type']) {
+                                            'building' => 'BP',
+                                            'electrical' => 'EP',
+                                            'plumbing' => 'PP',
+                                            'occupancy' => 'OP',
+                                            default => ''
+                                        };
+                                        echo htmlspecialchars($prefix . '-' . $year . '-' . $app['application_number']);
+                                        ?>
+                                    </td>
+                                    <td><?= htmlspecialchars($app['full_name']) ?></td>
+                                    <td><?= ucfirst(htmlspecialchars($app['permit_type'])) ?></td>
+                                    <td>
+                                        <span class="badge rounded-pill px-3 py-2 
+                                            bg-<?php echo $app['status'] === 'approved' ? 'success' : ($app['status'] === 'rejected' ? 'danger' : 'warning'); ?>"
+                                            id="status-<?= $app['id'] ?>">
+                                            <?= ucfirst(htmlspecialchars($app['status'])) ?>
+                                        </span>
+                                    </td>
+                                    <td><?= date("M d, Y", strtotime($app['created_at'])) ?></td>
+                                    <td class="text-center" id="actions-<?= $app['id'] ?>">
+                                        <?php if ($app['status'] !== 'rejected'): ?>
+                                            <div class="btn-group" role="group">
+                                                <button class="btn btn-sm btn-outline-primary view-btn" 
+                                                        onclick="window.location.href='review.php?id=<?= $app['id'] ?>'" 
+                                                        title="View">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-success approve-btn" 
+                                                        data-id="<?= $app['id'] ?>" 
+                                                        title="Approve">
+                                                    <i class="bi bi-check-circle"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger reject-btn" 
+                                                        data-id="<?= $app['id'] ?>" 
+                                                        title="Reject" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                                                    <i class="bi bi-x-circle"></i>
+                                                </button>
+                                            </div>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                                    No permit applications found
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
             <!-- User Management Section -->
             <div id="userManagementSection">
                 <h3 class="fw-bold text-dark d-flex align-items-center" style="font-size: 1.25rem;">
@@ -368,10 +327,23 @@ if ($resultApp && $resultApp->num_rows > 0) {
                                             <td>{$row['fullname']}</td>
                                             <td>{$row['email']}</td>
                                             <td>
-                                                <button class='btn btn-sm btn-primary edit-btn' title='Edit'><i class='bi bi-pencil'></i></button>
-                                                <button class='btn btn-sm btn-danger delete-btn' title='Delete'><i class='bi bi-trash'></i></button>
-                                                <button class='btn btn-sm btn-warning reset-btn' title='Reset Password' data-user-name='{$row['fullname']}' data-user-email='{$row['email']}'  data-user-id='{$row['id']}'><i class='bi bi-key'></i></button>
+                                                <button class='btn btn-sm btn-primary edit-btn' title='Edit'>
+                                                    <i class='bi bi-pencil'></i>
+                                                </button>
+                                                <button class='btn btn-sm btn-danger delete-btn' title='Delete'>
+                                                    <i class='bi bi-trash'></i>
+                                                </button>
+                                                <button class='btn btn-sm btn-warning reset-btn' title='Reset Password' 
+                                                        data-user-name='{$row['fullname']}' data-user-email='{$row['email']}' data-user-id='{$row['id']}'>
+                                                    <i class='bi bi-key'></i>
+                                                </button>
+                                                <!-- ✅ Access Button (Admin Only) -->
+                                                <button class='btn btn-sm btn-info access-btn' title='Manage Access' 
+                                                        data-user-id='{$row['id']}' data-user-name='{$row['fullname']}'>
+                                                    <i class='bi bi-shield-lock'></i>
+                                                </button>
                                             </td>
+
 
                                         </tr>";
                                                 }
@@ -528,7 +500,7 @@ if ($resultApp && $resultApp->num_rows > 0) {
                             <div class="mb-3">
                                 <label class="form-label">Role</label>
                                 <select name="role" class="form-select" required>
-                                    <option value="admin">Admin</option>
+                                    <option value="admin">admin</option>
                                     <option value="staff">Staff</option>
                                     <option value="applicant">Applicant</option>
                                 </select>
@@ -546,6 +518,52 @@ if ($resultApp && $resultApp->num_rows > 0) {
                 </div>
             </div>
 
+            <!-- Access Modal -->
+            <div class="modal fade" id="accessModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form id="accessForm">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Manage Access for <span id="accessUserName"></span></h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="hidden" name="user_id" id="accessUserId">
+
+                                <!-- Checkboxes for modules -->
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="permitAccess" name="modules[]"
+                                        value="permit_applications">
+                                    <label class="form-check-label" for="permitAccess">Permit Applications</label>
+                                </div>
+                                <!-- you can add more modules here later -->
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reject Confirmation Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="rejectModalLabel">Confirm Rejection</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to reject this application?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmRejectBtn">Reject</button>
+            </div>
+        </div>
+    </div>
+</div>
 
             <!-- System Settings Section -->
             <div id="systemSettingsSection" class="mt-0">
@@ -694,191 +712,21 @@ if ($resultApp && $resultApp->num_rows > 0) {
     <script src="../javascript/logout.js"></script>
     <script src="../javascript/superadmin.js"></script>
 
-    <script>
-        $(document).ready(function () {
-            // ✅ Show page once fully loaded
-            $("body").addClass("loaded");
-
-            // ----- DATATABLES -----
-            $('#usersTable, #adminsTable, #applicantsTable, #logsTable').DataTable({
-                paging: true,
-                searching: true,
-                lengthChange: true,
-                pageLength: 10,
-                ordering: false
+    <!-- SWEETALERT PASSWORD STATUS (PHP-generated) -->
+    <?php if (isset($_SESSION['pass_status'])):
+        $status = $_SESSION['pass_status']['status'];
+        $message = $_SESSION['pass_status']['message'];
+        unset($_SESSION['pass_status']);
+        ?>
+        <script>
+            Swal.fire({
+                icon: '<?php echo $status; ?>',
+                title: '<?php echo $status === "success" ? "Success!" : "Error!"; ?>',
+                text: '<?php echo $message; ?>',
+                confirmButtonColor: '#0d6efd'
             });
-
-            // ----- SWEETALERT PASSWORD STATUS -----
-            <?php if (isset($_SESSION['pass_status'])):
-                $status = $_SESSION['pass_status']['status'];
-                $message = $_SESSION['pass_status']['message'];
-                unset($_SESSION['pass_status']);
-                ?>
-                Swal.fire({
-                    icon: '<?php echo $status; ?>',
-                    title: '<?php echo $status === "success" ? "Success!" : "Error!"; ?>',
-                    text: '<?php echo $message; ?>',
-                    confirmButtonColor: '#0d6efd'
-                });
-            <?php endif; ?>
-
-            // ----- BOOTSTRAP TOOLTIPS -----
-            $('[title]').each(function () { new bootstrap.Tooltip(this); });
-
-            let selectedUserId = '';
-            let selectedUserName = '';
-            let selectedUserEmail = '';
-
-            // ----- RESET PASSWORD -----
-            $('#resetPasswordModal').on('show.bs.modal', function () {
-                $('#resetLoading').hide();
-                $('#confirmResetBtn, #resetPasswordModal .btn-secondary').prop('disabled', false);
-            });
-
-            $('.reset-btn').click(function () {
-
-                console.log("Reset button clicked" + selectedUserId);
-
-                selectedUserName = $(this).data('user-name');
-                selectedUserId = $(this).data('user-id');
-                selectedUserEmail = $(this).data('user-email');
-                $('#resetUserName').text(selectedUserName);
-                $('#resetPasswordModal').modal('show');
-            });
-
-            $('#confirmResetBtn').click(function () {
-                if (!selectedUserId) return;
-
-                console.log("Reset button clicked" + selectedUserName);
-                console.log("Reset button clicked" + selectedUserId);
-                console.log("Reset button clicked" + selectedUserEmail);
-
-                $('#resetLoading').removeClass('d-none');
-                $('#confirmResetBtn, #resetPasswordModal .btn-secondary').prop('disabled', true);
-
-                $.ajax({
-                    url: 'reset_password.php',
-                    method: 'POST',
-                    data: {
-                        user_id: selectedUserId,
-                        user_email: selectedUserEmail
-                    },
-                    success: function () {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Password Reset!',
-                            text: `Password for ${selectedUserName} has been reset to default. Email sent successfully.`,
-                            confirmButtonColor: '#0d6efd'
-                        });
-                        $('#resetPasswordModal').modal('hide');
-                    },
-                    error: function (xhr) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error!',
-                            text: xhr.responseText, // shows the exact error from PHP
-                            confirmButtonColor: '#d33'
-                        });
-                    },
-                    complete: function () {
-                        $('#resetLoading').addClass('d-none');
-                        $('#confirmResetBtn, #resetPasswordModal .btn-secondary').prop('disabled', false);
-                    }
-                });
-
-            });
-
-            // ----- SIDEBAR TOGGLE -----
-            $('#sidebarToggle').click(function () {
-                $('body').toggleClass('sidebar-visible');
-                localStorage.setItem('sidebarState', $('body').hasClass('sidebar-visible') ? 'open' : 'closed');
-            });
-
-            if (localStorage.getItem('sidebarState') === 'open') {
-                $('body').addClass('sidebar-visible');
-            }
-
-            $(document).click(function (e) {
-                if ($(window).width() < 992 && !$(e.target).closest('.sidebar, #sidebarToggle').length) {
-                    $('body').removeClass('sidebar-visible');
-                    localStorage.setItem('sidebarState', 'closed');
-                }
-            });
-
-            // ----- SHOW LAST SECTION -----
-            showSection(localStorage.getItem("lastSection") || "#dashboardSection");
-
-            // ----- EDIT USER -----
-            $(document).on('click', '.edit-btn', function () {
-                let $row = $(this).closest('tr');
-                selectedUserId = $row.find('td:first').text();
-                selectedUserName = $row.find('td:eq(1)').text();
-                let email = $row.find('td:eq(2)').text();
-
-                $('#editUserId').val(selectedUserId);
-                $('#editFullName').val(selectedUserName);
-                $('#editEmail').val(email);
-                $('#editUserModal').modal('show');
-            });
-
-            $('#saveEditBtn').click(function () {
-                $.post('update_user.php', {
-                    id: $('#editUserId').val(),
-                    fullname: $('#editFullName').val(),
-                    email: $('#editEmail').val()
-                }, function (res) {
-                    if (res.success) {
-                        let $row = $(`#adminsTable tr td:first:contains(${res.id}), #applicantsTable tr td:first:contains(${res.id})`).closest('tr');
-                        $row.find('td:eq(1)').text(res.fullname);
-                        $row.find('td:eq(2)').text(res.email);
-                        Swal.fire('Updated!', 'User info updated successfully.', 'success');
-                        $('#editUserModal').modal('hide');
-                    } else {
-                        Swal.fire('Error!', res.message || 'Update failed.', 'error');
-                    }
-                }, 'json');
-            });
-
-            // ----- DELETE USER -----
-            $(document).on('click', '.delete-btn', function () {
-                let $row = $(this).closest('tr');
-                selectedUserId = $row.find('td:first').text();
-                selectedUserName = $row.find('td:eq(1)').text();
-                $('#deleteUserName').text(selectedUserName);
-                $('#deleteUserModal').modal('show');
-            });
-
-            $('#confirmDeleteBtn').click(function () {
-                $.post('delete_user.php', { id: selectedUserId }, function (res) {
-                    if (res.success) {
-                        $(`#adminsTable tr td:first:contains(${selectedUserId}), #applicantsTable tr td:first:contains(${selectedUserId})`).closest('tr').remove();
-                        Swal.fire('Deleted!', 'User has been deleted.', 'success');
-                        $('#deleteUserModal').modal('hide');
-                    } else {
-                        Swal.fire('Error!', res.message || 'Deletion failed.', 'error');
-                    }
-                }, 'json');
-            });
-        });
-
-        // ----- FILTER USER TABLE -----
-        function filterUserTable(role) {
-            $("#usersTable tbody tr").each(function () {
-                $(this).toggle(role === "All" || $(this).data("role") === role);
-            });
-        }
-
-        // ----- SHOW SECTION -----
-        function showSection(sectionId) {
-            $('#dashboardSection, #userManagementSection, #systemSettingsSection, #systemLogsSection').hide();
-            $(sectionId).show();
-            $('.sidebar .nav-link, .offcanvas-body .nav-link').removeClass('active');
-            $(`.sidebar .nav-link[onclick="showSection('${sectionId}')"],
-            .offcanvas-body .nav-link[onclick="showSection('${sectionId}')"]`).addClass('active');
-            localStorage.setItem("lastSection", sectionId);
-        }
-    </script>
-
+        </script>
+    <?php endif; ?>
 
 </body>
 

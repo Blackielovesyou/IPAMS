@@ -1,0 +1,170 @@
+body {
+    min-height: 100vh;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease-in;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+body.loaded {
+    visibility: visible;
+    opacity: 1;
+}
+
+.navbar {
+    flex-wrap: nowrap;
+    z-index: 3000;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    height: 60px;
+}
+
+.dashboard-title {
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
+/* Removed sidebar & toggle styles */
+
+/* Main content spacing */
+.main-content {
+    margin-left: 0;
+    padding: 80px 15px 20px 15px;
+}
+
+/* Custom card styling */
+.summary-card {
+    border-radius: 15px;
+}
+
+.remarks-box {
+    background-color: #d9d6f9;
+    border-radius: 12px;
+}
+
+/* Timeline Styling */
+.timeline {
+    position: relative;
+    padding-left: 40px;
+    margin-top: 20px;
+}
+
+.timeline::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 18px;
+    width: 4px;
+    height: 100%;
+    background: #ddd;
+}
+
+.timeline-step {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.timeline-step:last-child {
+    margin-bottom: 0;
+}
+
+.timeline-step .circle {
+    position: absolute;
+    left: -2px;
+    top: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #fff;
+    z-index: 1;
+}
+
+.timeline-step .step-content {
+    margin-left: 50px;
+}
+
+.schedule-box {
+    background: #17a2b8;
+    color: #fff;
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-top: 8px;
+    display: inline-block;
+}
+
+/* Connected Progress Tracker */
+.progress-tracker {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.step-container {
+    text-align: center;
+    position: relative;
+    min-width: 60px;
+}
+
+.step-number {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #dee2e6;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin: 0 auto 6px auto;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 0 3px #f1f1f1;
+    z-index: 2;
+    position: relative;
+}
+
+.step-number.active {
+    background: #0d6efd;
+    color: #fff;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.3);
+}
+
+.step-number.approved {
+    background: #28a745;
+    color: #fff;
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.3);
+}
+
+.step-number.rejected {
+    background: #dc3545;
+    color: #fff;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.3);
+}
+
+.step-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+.step-line {
+    height: 4px;
+    background: #dee2e6;
+    flex: 1;
+    margin: 0 -2px;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+    z-index: 1;
+}
+
+.step-line.active {
+    background: #0d6efd;
+}
