@@ -62,14 +62,15 @@ if ($result) {
                                     </td>
                                     <td><?= date("M d, Y", strtotime($app['created_at'])) ?></td>
                                     <td class="text-center" id="actions-<?= $app['id'] ?>">
-                                        <?php if ($app['status'] !== 'rejected'): ?>
+                                        <?php if (!in_array($app['status'], ['approved', 'rejected'])): ?>
                                             <div class="btn-group" role="group">
                                                 <button class="btn btn-sm btn-outline-primary view-btn" data-id="<?= $app['id'] ?>"
                                                     title="View" onclick="window.location.href='review.php?id=<?= $app['id'] ?>'">
                                                     <i class="bi bi-eye"></i>
                                                 </button>
                                                 <button class="btn btn-sm btn-outline-success approve-btn"
-                                                    data-id="<?= $app['id'] ?>" title="Approve">
+                                                    data-id="<?= $app['id'] ?>" title="Approve" data-bs-toggle="modal"
+                                                    data-bs-target="#approveModal">
                                                     <i class="bi bi-check-circle"></i>
                                                 </button>
                                                 <button class="btn btn-sm btn-outline-danger reject-btn" data-id="<?= $app['id'] ?>"
@@ -79,6 +80,7 @@ if ($result) {
                                             </div>
                                         <?php endif; ?>
                                     </td>
+
 
                                 </tr>
                             <?php endforeach; ?>
@@ -113,6 +115,27 @@ if ($result) {
     </div>
 </div>
 
+
+<!-- Approve Confirmation Modal -->
+<div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="approveModalLabel">Confirm Approval</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to approve this application?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="confirmApproveBtn">Approve</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <script>
     let selectedAppId = null;
 
@@ -125,31 +148,48 @@ if ($result) {
     $('#confirmRejectBtn').on('click', function () {
         if (!selectedAppId) return;
 
-        $.ajax({
-            url: 'update_permit_status.php',
-            method: 'POST',
-            data: { id: selectedAppId, status: 'rejected' },
-            success: function (response) {
-                if (response === 'success') {
-                    // Update status badge
-                    $('#status-' + selectedAppId)
-                        .removeClass('bg-warning bg-success')
-                        .addClass('bg-danger')
-                        .text('Rejected');
+        $.post('update_permit_status.php', { id: selectedAppId, status: 'rejected' }, function (response) {
+            if (response === 'success') {
+                $('#status-' + selectedAppId)
+                    .removeClass('bg-warning bg-success')
+                    .addClass('bg-danger')
+                    .text('Rejected');
 
-                    // Remove all buttons from actions
-                    $('#actions-' + selectedAppId).html('');
+                $('#actions-' + selectedAppId).html('');
+                $('#rejectModal').modal('hide');
+            } else {
+                alert('Failed to reject the application.');
+            }
+        });
+    });
 
-                    // Close modal
-                    $('#rejectModal').modal('hide');
-                } else {
-                    alert('Failed to reject the application.');
-                }
+    // Store the selected application ID when approve button clicked
+    $(document).on('click', '.approve-btn', function () {
+        selectedAppId = $(this).data('id');
+        $('#approveModal').modal('show');
+    });
+
+    // Confirm approval
+    $('#confirmApproveBtn').on('click', function () {
+        if (!selectedAppId) return;
+
+        $.post('update_permit_status.php', { id: selectedAppId, status: 'approved' }, function (response) {
+            if (response === 'success') {
+                $('#status-' + selectedAppId)
+                    .removeClass('bg-warning bg-danger')
+                    .addClass('bg-success')
+                    .text('Approved');
+
+                $('#actions-' + selectedAppId).html('');
+                $('#approveModal').modal('hide');
+            } else {
+                alert('Failed to approve the application.');
             }
         });
     });
 
 </script>
+
 
 <style>
     #permitApplicationsTableWrapper .card {

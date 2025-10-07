@@ -180,91 +180,93 @@ if ($resultApps) {
 
             <!-- Permit Applications Section (hidden by default) -->
             <div id="permitApplicationsSection" style="display: none;">
-    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
-        <h3 class="fw-bold text-dark d-flex align-items-center mb-2" style="font-size: 1.4rem;">
-            <i class="bi bi-clipboard-check-fill text-primary me-2"></i>
-            Permit Applications
-        </h3>
-    </div>
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+                    <h3 class="fw-bold text-dark d-flex align-items-center mb-2" style="font-size: 1.4rem;">
+                        <i class="bi bi-clipboard-check-fill text-primary me-2"></i>
+                        Permit Applications
+                    </h3>
+                </div>
 
-    <div class="card shadow-sm border-0 rounded-3">
-        <div class="card-body p-3">
-            <div class="table-responsive">
-                <table id="applicationsTable" class="table table-hover align-middle text-center mb-0">
-                    <thead class="table-primary text-dark">
-                        <tr>
-                            <th>Application No.</th>
-                            <th>Applicant</th>
-                            <th>Permit Type</th>
-                            <th>Status</th>
-                            <th>Submitted On</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (!empty($applications)): ?>
-                            <?php foreach ($applications as $app): ?>
-                                <tr id="appRow-<?= $app['id'] ?>">
-                                    <td>
-                                        <?php
-                                        $year = date("Y", strtotime($app['created_at']));
-                                        $prefix = match ($app['permit_type']) {
-                                            'building' => 'BP',
-                                            'electrical' => 'EP',
-                                            'plumbing' => 'PP',
-                                            'occupancy' => 'OP',
-                                            default => ''
-                                        };
-                                        echo htmlspecialchars($prefix . '-' . $year . '-' . $app['application_number']);
-                                        ?>
-                                    </td>
-                                    <td><?= htmlspecialchars($app['full_name']) ?></td>
-                                    <td><?= ucfirst(htmlspecialchars($app['permit_type'])) ?></td>
-                                    <td>
-                                        <span class="badge rounded-pill px-3 py-2 
+                <div class="card shadow-sm border-0 rounded-3">
+                    <div class="card-body p-3">
+                        <div class="table-responsive">
+                            <table id="applicationsTable" class="table table-hover align-middle text-center mb-0">
+                                <thead class="table-primary text-dark">
+                                    <tr>
+                                        <th>Application No.</th>
+                                        <th>Applicant</th>
+                                        <th>Permit Type</th>
+                                        <th>Status</th>
+                                        <th>Submitted On</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (!empty($applications)): ?>
+                                        <?php foreach ($applications as $app): ?>
+                                            <tr id="appRow-<?= $app['id'] ?>">
+                                                <td>
+                                                    <?php
+                                                    $year = date("Y", strtotime($app['created_at']));
+                                                    $prefix = match ($app['permit_type']) {
+                                                        'building' => 'BP',
+                                                        'electrical' => 'EP',
+                                                        'plumbing' => 'PP',
+                                                        'occupancy' => 'OP',
+                                                        default => ''
+                                                    };
+                                                    echo htmlspecialchars($prefix . '-' . $year . '-' . $app['application_number']);
+                                                    ?>
+                                                </td>
+                                                <td><?= htmlspecialchars($app['full_name']) ?></td>
+                                                <td><?= ucfirst(htmlspecialchars($app['permit_type'])) ?></td>
+                                                <td>
+                                                    <span
+                                                        class="badge rounded-pill px-3 py-2 
                                             bg-<?php echo $app['status'] === 'approved' ? 'success' : ($app['status'] === 'rejected' ? 'danger' : 'warning'); ?>"
-                                            id="status-<?= $app['id'] ?>">
-                                            <?= ucfirst(htmlspecialchars($app['status'])) ?>
-                                        </span>
-                                    </td>
-                                    <td><?= date("M d, Y", strtotime($app['created_at'])) ?></td>
-                                    <td class="text-center" id="actions-<?= $app['id'] ?>">
-                                        <?php if ($app['status'] !== 'rejected'): ?>
-                                            <div class="btn-group" role="group">
-                                                <button class="btn btn-sm btn-outline-primary view-btn" 
-                                                        onclick="window.location.href='review.php?id=<?= $app['id'] ?>'" 
-                                                        title="View">
-                                                    <i class="bi bi-eye"></i>
-                                                </button>
-                                                <button class="btn btn-sm btn-outline-success approve-btn" 
-                                                        data-id="<?= $app['id'] ?>" 
-                                                        title="Approve">
-                                                    <i class="bi bi-check-circle"></i>
-                                                </button>
-                                                <button class="btn btn-sm btn-outline-danger reject-btn" 
-                                                        data-id="<?= $app['id'] ?>" 
-                                                        title="Reject" data-bs-toggle="modal" data-bs-target="#rejectModal">
-                                                    <i class="bi bi-x-circle"></i>
-                                                </button>
-                                            </div>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <tr>
-                                <td colspan="6" class="text-center text-muted py-4">
-                                    <i class="bi bi-inbox fs-3 d-block mb-2"></i>
-                                    No permit applications found
-                                </td>
-                            </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+                                                        id="status-<?= $app['id'] ?>">
+                                                        <?= ucfirst(htmlspecialchars($app['status'])) ?>
+                                                    </span>
+                                                </td>
+                                                <td><?= date("M d, Y", strtotime($app['created_at'])) ?></td>
+                                                <td class="text-center" id="actions-<?= $app['id'] ?>">
+                                                    <?php if (!in_array($app['status'], ['approved', 'rejected'])): ?>
+                                                        <div class="btn-group" role="group">
+                                                            <button class="btn btn-sm btn-outline-primary view-btn"
+                                                                data-id="<?= $app['id'] ?>" title="View">
+                                                                <i class="bi bi-eye"></i>
+                                                            </button>
+
+                                                            <button class="btn btn-sm btn-outline-success approve-btn"
+                                                                data-id="<?= $app['id'] ?>" title="Approve" data-bs-toggle="modal"
+                                                                data-bs-target="#approveModal">
+                                                                <i class="bi bi-check-circle"></i>
+                                                            </button>
+                                                            <button class="btn btn-sm btn-outline-danger reject-btn"
+                                                                data-id="<?= $app['id'] ?>" title="Reject" data-bs-toggle="modal"
+                                                                data-bs-target="#rejectModal">
+                                                                <i class="bi bi-x-circle"></i>
+                                                            </button>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                </td>
+
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="6" class="text-center text-muted py-4">
+                                                <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                                                No permit applications found
+                                            </td>
+                                        </tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
-</div>
 
 
 
@@ -547,23 +549,45 @@ if ($resultApps) {
             </div>
 
             <!-- Reject Confirmation Modal -->
-<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="rejectModalLabel">Confirm Rejection</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title" id="rejectModalLabel">Confirm Rejection</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Are you sure you want to reject this application?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-danger" id="confirmRejectBtn">Reject</button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="modal-body">
-                Are you sure you want to reject this application?
+
+            <!-- Approve Confirmation Modal -->
+            <div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title" id="approveModalLabel">Confirm Approval</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Are you sure you want to approve this application?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-success" id="confirmApproveBtn">Approve</button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" id="confirmRejectBtn">Reject</button>
-            </div>
-        </div>
-    </div>
-</div>
+
 
             <!-- System Settings Section -->
             <div id="systemSettingsSection" class="mt-0">

@@ -30,7 +30,7 @@ $(document).ready(function () {
     });
 
     let selectedUserId = "", selectedUserName = "", selectedUserEmail = "";
-    let selectedAppId = null; // For reject modal
+    let selectedAppId = null; // For approve/reject modals
 
     // ----- RESET PASSWORD -----
     $("#resetPasswordModal").on("show.bs.modal", function () {
@@ -199,26 +199,10 @@ $(document).ready(function () {
         window.location.href = "review.php?id=" + id;
     });
 
-    // Approve button
-    $(document).on("click", ".approve-btn", function () {
-        let id = $(this).data("id");
-        $.post('update_permit_status.php', { id: id, status: 'approved' }, function (res) {
-            if (res === 'success') {
-                $('#status-' + id)
-                    .removeClass('bg-warning bg-danger')
-                    .addClass('bg-success')
-                    .text('Approved');
-                $('#actions-' + id).html(''); // remove buttons
-                Swal.fire("Approved!", "Application " + id + " approved.", "success");
-            } else {
-                Swal.fire("Error!", "Failed to approve the application.", "error");
-            }
-        });
-    });
-
-    // Reject button: modal triggers are handled in HTML, JS below
+    // ----- REJECT APPLICATION -----
     $(document).on('click', '.reject-btn', function () {
         selectedAppId = $(this).data('id');
+        $('#rejectModal').modal('show');
     });
 
     $('#confirmRejectBtn').on('click', function () {
@@ -237,6 +221,27 @@ $(document).ready(function () {
         });
     });
 
+    // ----- APPROVE APPLICATION -----
+    $(document).on('click', '.approve-btn', function () {
+        selectedAppId = $(this).data('id');
+        $('#approveModal').modal('show');
+    });
+
+    $('#confirmApproveBtn').on('click', function () {
+        if (!selectedAppId) return;
+        $.post('update_permit_status.php', { id: selectedAppId, status: 'approved' }, function (response) {
+            if (response === 'success') {
+                $('#status-' + selectedAppId)
+                    .removeClass('bg-warning bg-danger')
+                    .addClass('bg-success')
+                    .text('Approved');
+                $('#actions-' + selectedAppId).html('');
+                $('#approveModal').modal('hide');
+            } else {
+                alert('Failed to approve the application.');
+            }
+        });
+    });
 });
 
 // ----- FILTER USER TABLE -----
@@ -263,7 +268,25 @@ function showSection(sectionId) {
     $(`.sidebar .nav-link[onclick="showSection('${sectionId}')"]`).addClass("active");
 
     localStorage.setItem("lastSection", sectionId);
+
+    // Initialize DataTables only once
+    if (sectionId === "#permitApplicationsSection" && !$.fn.DataTable.isDataTable('#applicationsTable')) {
+        $("#applicationsTable").DataTable({
+            pageLength: 10,
+            lengthChange: true,
+            searching: true,
+            ordering: true,
+            info: true,
+            language: {
+                search: "Search Applications:",
+                lengthMenu: "Show _MENU_ entries",
+                info: "Showing _START_ to _END_ of _TOTAL_ applications",
+                paginate: { previous: "Prev", next: "Next" }
+            }
+        });
+    }
 }
+
 
 // Restore last section on page load
 $(document).ready(function() {
