@@ -138,7 +138,8 @@
 
                         <!-- Submit Button -->
                         <div class="text-center">
-                            <button type="button" class="btn btn-primary px-5 py-2 rounded-pill shadow-sm">
+                            <button type="button" class="btn btn-primary px-5 py-2 rounded-pill shadow-sm"
+                                data-bs-toggle="modal" data-bs-target="#paymentModal">
                                 <i class="bi bi-send me-2"></i> Submit Application
                             </button>
                         </div>
@@ -258,7 +259,8 @@
 
                         <!-- Submit -->
                         <div class="text-center">
-                            <button type="button" class="btn btn-primary px-5 py-2 rounded-pill shadow-sm">
+                            <button type="button" class="btn btn-primary px-5 py-2 rounded-pill shadow-sm"
+                                data-bs-toggle="modal" data-bs-target="#paymentModal">
                                 <i class="bi bi-send me-2"></i> Submit Application
                             </button>
                         </div>
@@ -384,7 +386,8 @@
 
                         <!-- Submit Button -->
                         <div class="text-center">
-                            <button type="button" class="btn btn-warning px-5 py-2 rounded-pill shadow-sm">
+                            <button type="button" class="btn btn-primary px-5 py-2 rounded-pill shadow-sm"
+                                data-bs-toggle="modal" data-bs-target="#paymentModal">
                                 <i class="bi bi-send me-2"></i> Submit Application
                             </button>
                         </div>
@@ -508,7 +511,8 @@
 
                         <!-- Submit Button -->
                         <div class="text-center">
-                            <button type="button" class="btn btn-success px-5 py-2 rounded-pill shadow-sm">
+                            <button type="button" class="btn btn-primary px-5 py-2 rounded-pill shadow-sm"
+                                data-bs-toggle="modal" data-bs-target="#paymentModal">
                                 <i class="bi bi-send me-2"></i> Submit Application
                             </button>
                         </div>
@@ -526,5 +530,83 @@
 
     </div>
 </main>
+
+<!-- Payment Confirmation Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="paymentModalLabel">Payment Required</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3">To submit your application, a processing fee is required. Please select a payment method:</p>
+
+                <div class="list-group">
+                    @foreach($payments as $payment)
+                        <button type="button" class="list-group-item list-group-item-action payment-option"
+                            data-id="{{ $payment->id }}"
+                            data-method="{{ $payment->method }}"
+                            data-number="{{ $payment->number }}"
+                            data-qr="{{ $payment->qr ? asset('storage/'.$payment->qr) : '' }}">
+                            {{ $payment->method }} - {{ $payment->number }}
+                        </button>
+                    @endforeach
+                </div>
+
+                <!-- Selected Payment Info -->
+                <div class="mt-4 d-none text-center" id="selectedPaymentInfo">
+                    <h6 class="fw-bold">Selected Payment Method</h6>
+                    <p id="paymentMethod"></p>
+                    <p id="paymentNumber"></p>
+                    <div id="paymentQR" class="mt-3"></div>
+                    <small class="text-muted">Once payment is made, you may proceed to submit your application.</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="submitApplicationForm" action="{{ route('user.permit.submit', $type) }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="payment_id" id="payment_id">
+                    <button type="submit" class="btn btn-primary" disabled id="confirmPaymentBtn">Confirm & Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const paymentButtons = document.querySelectorAll('.payment-option');
+    const selectedInfo = document.getElementById('selectedPaymentInfo');
+    const methodEl = document.getElementById('paymentMethod');
+    const numberEl = document.getElementById('paymentNumber');
+    const qrEl = document.getElementById('paymentQR');
+    const confirmBtn = document.getElementById('confirmPaymentBtn');
+    const paymentIdInput = document.getElementById('payment_id');
+
+    paymentButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const method = this.dataset.method;
+            const number = this.dataset.number;
+            const qr = this.dataset.qr;
+            const id = this.dataset.id;
+
+            methodEl.textContent = `Method: ${method}`;
+            numberEl.textContent = `Number: ${number}`;
+
+            if (qr) {
+                qrEl.innerHTML = `<img src="${qr}" alt="QR Code" style="max-height:250px; width:auto; margin-top:10px;">`;
+            } else {
+                qrEl.innerHTML = '';
+            }
+
+            selectedInfo.classList.remove('d-none');
+            confirmBtn.disabled = false;
+            paymentIdInput.value = id;
+        });
+    });
+});
+</script>
 
 @include('user.partials.__footer')

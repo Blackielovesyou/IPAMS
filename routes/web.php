@@ -13,6 +13,7 @@ use App\Http\Controllers\ModuleAccessController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ShareableController;
 use App\Models\SchoolYearModel;
+use App\Http\Controllers\User\PermitController;
 
 /*
 |--------------------------------------------------------------------------
@@ -116,11 +117,11 @@ Route::middleware(['auth'])->group(function () {
             return view('user.home');
         })->name('user.home');
 
-        Route::get('/user/permit', function () {
-            $type = request()->query('type'); // capture ?type=building
-            return view('user.pages.permit', compact('type'));
-        })->name('user.permit');
+        Route::get('/user/permit', [PermitController::class, 'showPermit'])->name('user.permit');
 
+        Route::post('/user/permit/submit/{type}', [PermitController::class, 'submitPermit'])->name('user.permit.submit');
+
+        
         Route::middleware(['web'])->group(function () {
             Route::post('/user/update-profile', [UsersController::class, 'updateProfile'])->name('update-profile');
             Route::get('/user/help', function () {
